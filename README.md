@@ -1,8 +1,19 @@
-# text2speech — Part of the `robot_environment` Package
+# text2speech
 
-The **text2speech** module provides **text-to-speech (TTS)** functionality for the larger `robot_environment` package. It supports asynchronous text-to-speech generation and robust, safe audio playback.
+The **text2speech** module provides **text-to-speech (TTS)** functionality for robotics and other applications. It supports asynchronous text-to-speech generation and robust, safe audio playback.
 
 Although initially designed to use **ElevenLabs**, this implementation now relies on the **Kokoro** model for speech synthesis.
+
+---
+
+## Badges
+
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code Quality](https://github.com/dgaida/text2speech/actions/workflows/lint.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/lint.yml)
+[![CodeQL](https://github.com/dgaida/text2speech/actions/workflows/codeql.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/codeql.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 ---
 
@@ -68,5 +79,4 @@ thread.join()  # Wait for speech playback to complete
 
 ## License
 
-This code is part of the **robot_environment** package and follows its overall licensing terms.
 
