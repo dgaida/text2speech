@@ -11,6 +11,7 @@ import torchaudio
 import torch
 import sounddevice as sd
 import threading
+# from typing import Optional
 
 
 class Text2Speech:

@@ -6,7 +6,7 @@ error handling.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch
 import threading
 import torch
 import numpy as np
