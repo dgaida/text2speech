@@ -15,7 +15,7 @@ def mock_kokoro_pipeline():
     Yields:
         Mock: A mocked KPipeline instance.
     """
-    with patch('text2speech.text2speech.KPipeline') as mock:
+    with patch("text2speech.text2speech.KPipeline") as mock:
         mock_client = Mock()
         mock.return_value = mock_client
         yield mock
@@ -28,8 +28,8 @@ def mock_sounddevice():
     Yields:
         Mock: A mocked sounddevice module.
     """
-    with patch('text2speech.text2speech.sd') as mock:
-        mock.query_devices.return_value = {'default_samplerate': 24000}
+    with patch("text2speech.text2speech.sd") as mock:
+        mock.query_devices.return_value = {"default_samplerate": 24000}
         mock.default.device = [None, 0]
         yield mock
 

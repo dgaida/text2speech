@@ -31,11 +31,7 @@ def example_multiple_sentences(tts: Text2Speech) -> None:
         tts: An initialized Text2Speech instance.
     """
     print("\n=== Example 2: Multiple Sentences ===")
-    sentences = [
-        "This is the first sentence.",
-        "Now I'm saying something else.",
-        "And finally, this is the last part."
-    ]
+    sentences = ["This is the first sentence.", "Now I'm saying something else.", "And finally, this is the last part."]
 
     for i, sentence in enumerate(sentences, 1):
         print(f"Speaking sentence {i}: '{sentence}'")
@@ -99,7 +95,7 @@ def example_interactive_mode(tts: Text2Speech) -> None:
     while True:
         user_input = input("\n> ").strip()
 
-        if user_input.lower() in ['quit', 'exit', 'q']:
+        if user_input.lower() in ["quit", "exit", "q"]:
             print("Exiting interactive mode...")
             break
 
@@ -133,7 +129,7 @@ def run_all_examples(verbose: bool = False) -> None:
 
     # Optionally run interactive mode
     response = input("\nRun interactive mode? (y/n): ").strip().lower()
-    if response == 'y':
+    if response == "y":
         example_interactive_mode(tts)
 
     print("\n" + "=" * 60)
@@ -152,27 +148,14 @@ Examples:
   python main.py --verbose          # Run with verbose output
   python main.py --example 1        # Run specific example
   python main.py --interactive      # Run interactive mode only
-        """
+        """,
     )
 
-    parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 
-    parser.add_argument(
-        '--example', '-e',
-        type=int,
-        choices=[1, 2, 3, 4, 5],
-        help='Run a specific example (1-5)'
-    )
+    parser.add_argument("--example", "-e", type=int, choices=[1, 2, 3, 4, 5], help="Run a specific example (1-5)")
 
-    parser.add_argument(
-        '--interactive', '-i',
-        action='store_true',
-        help='Run interactive mode only'
-    )
+    parser.add_argument("--interactive", "-i", action="store_true", help="Run interactive mode only")
 
     args = parser.parse_args()
 

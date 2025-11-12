@@ -1,17 +1,28 @@
 # class with text-2-speech capabilities
 
+from typing import Optional
+
 try:
     from elevenlabs import play
     from elevenlabs.client import ElevenLabs
 except ImportError as e:
     print("error importing elevenlabs:", e)
 
-from kokoro import KPipeline
+try:
+    from kokoro import KPipeline
+
+    HAS_KOKORO = True
+except ImportError as e:
+    print(f"Warning: kokoro not available ({e}). TTS will not work.")
+    HAS_KOKORO = False
+    KPipeline = None
+
 import torchaudio
 import torch
 
 try:
     import sounddevice as sd
+
     HAS_SOUNDDEVICE = True
 except (ImportError, OSError) as e:
     print(f"Warning: sounddevice not available ({e}). Audio playback will not work.")
@@ -19,6 +30,7 @@ except (ImportError, OSError) as e:
     sd = None
 
 import threading
+
 # from typing import Optional
 
 
@@ -49,10 +61,16 @@ class Text2Speech:
         except (NameError, Exception) as e:
             if verbose:
                 print(e)
+
             # 🇺🇸 'a' => American English, 🇬🇧 'b' => British English
-            self._client = KPipeline(lang_code='a')  # Make sure lang_code matches desired voice
+            if HAS_KOKORO:
+                self._client = KPipeline(lang_code="a")  # Make sure lang_code matches desired voice
+            else:
+                self._client = None
+                print("⚠️ TTS functionality disabled - kokoro not available")
+
             if verbose:
-                print('Using Kokoro instead!')
+                print("Using Kokoro instead!")
         # TODO: has to be done in ubuntu only so that meeting owl is used for output
         # sd.default.device[1] = 4  # Output only
 
@@ -77,11 +95,7 @@ class Text2Speech:
         """
         if self._client is not None:
             try:
-                audio = self._client.generate(
-                    text=mytext,
-                    voice="Brian",
-                    model="eleven_multilingual_v2"
-                )
+                audio = self._client.generate(text=mytext, voice="Brian", model="eleven_multilingual_v2")
                 play(audio)
             except Exception as e:
                 print(f"Error with ElevenLabs: {e, e.with_traceback(None)}")
@@ -94,12 +108,7 @@ class Text2Speech:
         """
         if self._client is not None:
             try:
-                generator = self._client(
-                    mytext,
-                    voice='af_heart',
-                    speed=1,
-                    split_pattern=r'\n+'
-                )
+                generator = self._client(mytext, voice="af_heart", speed=1, split_pattern=r"\n+")
                 for _, _, audio in generator:
                     Text2Speech._play_audio_safely(audio, original_sample_rate=24000)
                     if HAS_SOUNDDEVICE and sd:
@@ -109,17 +118,14 @@ class Text2Speech:
 
     @staticmethod
     def _play_audio_safely(
-        audio_tensor: torch.Tensor,
-        original_sample_rate: int = 24000,
-        device: int | None = None,
-        volume: float = 0.8
+        audio_tensor: torch.Tensor, original_sample_rate: int = 24000, device: Optional[int] = None, volume: float = 0.8
     ) -> None:
         """Play audio safely by checking supported sample rate and adjusting volume.
 
         Args:
             audio_tensor (torch.Tensor): The 1D audio waveform tensor.
             original_sample_rate (int, optional): Original sample rate of the audio. Defaults to 24000.
-            device (int | None, optional): Output device index. Defaults to system default.
+            device (Optional[int], optional): Output device index. Defaults to system default.
             volume (float, optional): Playback volume multiplier (0.0–1.0). Defaults to 0.8.
         """
         if not HAS_SOUNDDEVICE or sd is None:
@@ -130,14 +136,11 @@ class Text2Speech:
             if device is None:
                 device = sd.default.device[1]  # Default output device
 
-            device_info = sd.query_devices(device, 'output')
-            supported_rate = int(device_info['default_samplerate'])
+            device_info = sd.query_devices(device, "output")
+            supported_rate = int(device_info["default_samplerate"])
 
             if original_sample_rate != supported_rate:
-                resampler = torchaudio.transforms.Resample(
-                    orig_freq=original_sample_rate,
-                    new_freq=supported_rate
-                )
+                resampler = torchaudio.transforms.Resample(orig_freq=original_sample_rate, new_freq=supported_rate)
                 audio_tensor = resampler(audio_tensor)
 
             # Normalize and scale volume
