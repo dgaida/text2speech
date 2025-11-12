@@ -366,37 +366,6 @@ For slow performance:
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone repository
-git clone https://github.com/dgaida/text2speech.git
-cd text2speech
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install development dependencies
-pip install -r requirements.txt
-pip install pytest pytest-cov ruff black mypy
-
-# Run tests
-pytest
-```
-
----
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -417,27 +386,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Daniel Gaida**
 Email: daniel.gaida@th-koeln.de
 GitHub: [@dgaida](https://github.com/dgaida)
-
----
-
-## Changelog
-
-### [0.1.0] - 2025-01-XX
-
-#### Added
-- Initial release with Kokoro TTS support
-- Asynchronous speech generation
-- Automatic audio resampling and normalization
-- Comprehensive test suite
-- Example applications in `main.py`
-- CI/CD pipeline with GitHub Actions
-
-#### Changed
-- Migrated from ElevenLabs to Kokoro for TTS generation
-- Improved error handling and logging
-
-#### Deprecated
-- ElevenLabs integration (kept for backward compatibility)
 
 ---
 
