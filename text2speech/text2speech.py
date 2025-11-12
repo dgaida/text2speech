@@ -9,7 +9,15 @@ except ImportError as e:
 from kokoro import KPipeline
 import torchaudio
 import torch
-import sounddevice as sd
+
+try:
+    import sounddevice as sd
+    HAS_SOUNDDEVICE = True
+except (ImportError, OSError) as e:
+    print(f"Warning: sounddevice not available ({e}). Audio playback will not work.")
+    HAS_SOUNDDEVICE = False
+    sd = None
+
 import threading
 # from typing import Optional
 
@@ -94,7 +102,8 @@ class Text2Speech:
                 )
                 for _, _, audio in generator:
                     Text2Speech._play_audio_safely(audio, original_sample_rate=24000)
-                    sd.wait()
+                    if HAS_SOUNDDEVICE and sd:
+                        sd.wait()
             except Exception as e:
                 print(f"Error with Kokoro: {e, e.with_traceback(None)}")
 
@@ -113,6 +122,10 @@ class Text2Speech:
             device (int | None, optional): Output device index. Defaults to system default.
             volume (float, optional): Playback volume multiplier (0.0–1.0). Defaults to 0.8.
         """
+        if not HAS_SOUNDDEVICE or sd is None:
+            print("⚠️ sounddevice not available, skipping audio playback")
+            return
+
         try:
             if device is None:
                 device = sd.default.device[1]  # Default output device
