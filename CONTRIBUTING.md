@@ -34,7 +34,7 @@ pytest
 ### Getting Help
 
 - 📖 Read the [README](README.md)
-- 🐛 Check [existing issues](https://github.com/dgaida/rag-foerderkatalog/issues)
+- 🐛 Check [existing issues](https://github.com/dgaida/text2speech/issues)
 - 💬 Ask in discussions
 
 ### Code of Conduct
