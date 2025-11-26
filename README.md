@@ -8,7 +8,7 @@ Although initially designed to use **ElevenLabs**, this implementation now relie
 
 ## Badges
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/dgaida/text2speech/branch/master/graph/badge.svg)](https://codecov.io/gh/dgaida/text2speech)
 [![Code Quality](https://github.com/dgaida/text2speech/actions/workflows/lint.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/lint.yml)
@@ -341,8 +341,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-**Daniel Gaida**
-Email: daniel.gaida@th-koeln.de
+**Daniel Gaida**  
+Email: daniel.gaida@th-koeln.de  
 GitHub: [@dgaida](https://github.com/dgaida)
 
 ---
