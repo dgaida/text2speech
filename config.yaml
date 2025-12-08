@@ -1,0 +1,58 @@
+# ============================================================================
+# Configuration file for text2speech
+# ============================================================================
+
+# Audio device settings
+audio:
+  # Output device ID (null = use system default)
+  # Run `python -c "import sounddevice as sd; print(sd.query_devices())"` to list devices
+  output_device: null
+
+  # Default volume (0.0 to 1.0)
+  default_volume: 0.8
+
+  # Sample rate (24000 is Kokoro's native rate)
+  sample_rate: 24000
+
+# TTS Model settings
+tts:
+  # Primary TTS engine: "kokoro" or "elevenlabs"
+  engine: "kokoro"
+
+  # Kokoro-specific settings
+  kokoro:
+    # Language code: 'a' (American), 'b' (British), 'j' (Japanese), 'z' (Mandarin)
+    lang_code: "a"
+
+    # Voice: 'af_heart', 'af_nicole', 'am_adam', 'bf_emma', 'bm_lewis', etc.
+    voice: "af_heart"
+
+    # Speech speed (0.5 to 2.0)
+    speed: 1.0
+
+    # Pattern to split text (regex)
+    split_pattern: "\\n+"
+
+  # ElevenLabs settings (legacy, not actively used)
+  elevenlabs:
+    voice: "Brian"
+    model: "eleven_multilingual_v2"
+
+# Logging and debugging
+logging:
+  # Enable verbose output
+  verbose: false
+
+  # Log file path (null = no file logging)
+  log_file: null
+
+  # Log level: "DEBUG", "INFO", "WARNING", "ERROR"
+  log_level: "INFO"
+
+# Performance settings
+performance:
+  # Use GPU if available
+  use_gpu: true
+
+  # Number of threads for audio processing
+  num_threads: 1
