@@ -5,10 +5,13 @@ import logging
 
 try:
     from elevenlabs import play
+    from elevenlabs.client import ElevenLabs
 
-    # from elevenlabs.client import ElevenLabs
+    HAS_ELEVENLABS = True
 except ImportError as e:
-    print("error importing elevenlabs:", e)
+    print("Warning: elevenlabs not available:", e)
+    HAS_ELEVENLABS = False
+    ElevenLabs = None
 
 try:
     from kokoro import KPipeline
@@ -39,7 +42,8 @@ from .config import Config
 class Text2Speech:
     """Text-to-Speech (TTS) class with configurable settings.
 
-    This class provides text-to-speech functionality using the Kokoro model with
+    This class provides text-to-speech functionality using either ElevenLabs
+    (when a valid API key is provided) or Kokoro model (as fallback) with
     configuration support via YAML files. Supports asynchronous speech synthesis
     and safe audio playback with dynamic resampling.
     """
@@ -54,7 +58,7 @@ class Text2Speech:
         """Initialize the Text2Speech instance.
 
         Args:
-            el_api_key (str, optional): API key for ElevenLabs (legacy, not used).
+            el_api_key (str, optional): API key for ElevenLabs. If valid, ElevenLabs will be used.
             verbose (bool, optional): If True, prints debug info. Overrides config if set.
             config_path (str, optional): Path to config.yaml file.
             config (Config, optional): Pre-loaded Config object. Takes precedence over config_path.
@@ -74,8 +78,13 @@ class Text2Speech:
         # Setup logging
         self._setup_logging()
 
+        # Store API key and validate
+        self._el_api_key = el_api_key
+        self._use_elevenlabs = self._validate_elevenlabs_key(el_api_key)
+
         # Initialize TTS client
         self._client = None
+        self._el_client = None
         self._initialize_tts_engine()
 
         # Set audio output device from config
@@ -87,6 +96,34 @@ class Text2Speech:
                     self.logger.info(f"Audio output device set to: {device_id}")
                 except Exception as e:
                     self.logger.error(f"Failed to set audio device {device_id}: {e}")
+
+    def _validate_elevenlabs_key(self, api_key: Optional[str]) -> bool:
+        """Validate ElevenLabs API key format.
+
+        Args:
+            api_key (str, optional): The API key to validate.
+
+        Returns:
+            bool: True if the key appears valid, False otherwise.
+        """
+        if api_key is None:
+            return False
+
+        if not isinstance(api_key, str):
+            return False
+
+        # ElevenLabs API keys typically start with "sk_" and have a minimum length
+        # They're usually around 32-64 characters long
+        if api_key.startswith("sk_") and len(api_key) >= 10:
+            return True
+
+        # Some legacy keys might not start with sk_ but are still valid
+        # If it's a reasonably long string, we'll try to use it
+        if len(api_key) >= 32:
+            self.logger.warning("API key format unusual but will attempt to use it")
+            return True
+
+        return False
 
     def _setup_logging(self) -> None:
         """Setup logging configuration."""
@@ -113,10 +150,28 @@ class Text2Speech:
                 self.logger.addHandler(file_handler)
 
     def _initialize_tts_engine(self) -> None:
-        """Initialize the TTS engine based on configuration."""
+        """Initialize the TTS engine based on configuration and API key."""
+
+        # If valid ElevenLabs API key provided, use ElevenLabs
+        if self._use_elevenlabs and HAS_ELEVENLABS:
+            try:
+                self._el_client = ElevenLabs(api_key=self._el_api_key)
+                self.logger.info("Initialized ElevenLabs TTS")
+                # Also initialize Kokoro as fallback
+                if HAS_KOKORO:
+                    self._client = KPipeline(lang_code=self.config.kokoro_lang_code)
+                    self.logger.info("Kokoro TTS initialized as fallback")
+                return
+            except Exception as e:
+                self.logger.error(f"Failed to initialize ElevenLabs: {e}")
+                self.logger.info("Falling back to Kokoro TTS")
+                self._use_elevenlabs = False
+                self._el_client = None
+
+        # Otherwise use Kokoro (default)
         engine = self.config.tts_engine
 
-        if engine == "kokoro":
+        if engine == "kokoro" or not self._use_elevenlabs:
             if HAS_KOKORO:
                 lang_code = self.config.kokoro_lang_code
                 self._client = KPipeline(lang_code=lang_code)
@@ -126,12 +181,12 @@ class Text2Speech:
                 self._client = None
 
         elif engine == "elevenlabs":
-            self.logger.warning("ElevenLabs is deprecated and no longer supported")
-            # Fall back to Kokoro
-            if HAS_KOKORO:
-                self._client = KPipeline(lang_code=self.config.kokoro_lang_code)
-                self.logger.info("Falling back to Kokoro TTS")
-
+            if not self._use_elevenlabs:
+                self.logger.warning("ElevenLabs requested but no valid API key provided")
+                # Fall back to Kokoro
+                if HAS_KOKORO:
+                    self._client = KPipeline(lang_code=self.config.kokoro_lang_code)
+                    self.logger.info("Falling back to Kokoro TTS")
         else:
             self.logger.error(f"Unknown TTS engine: {engine}")
             self._client = None
@@ -145,26 +200,43 @@ class Text2Speech:
         Returns:
             threading.Thread: The thread handling the asynchronous TTS operation.
         """
-        thread = threading.Thread(target=self._text2speech_kokoro, args=(text,))
+        # Use ElevenLabs if available and initialized
+        if self._use_elevenlabs and self._el_client is not None:
+            thread = threading.Thread(target=self._text2speech_elevenlabs, args=(text,))
+        else:
+            thread = threading.Thread(target=self._text2speech_kokoro, args=(text,))
+
         thread.start()
         return thread
 
-    def _text2speech(self, mytext: str) -> None:
-        """Legacy ElevenLabs TTS method (deprecated).
+    def _text2speech_elevenlabs(self, mytext: str) -> None:
+        """Perform TTS using ElevenLabs API.
 
         Args:
             mytext (str): The text to be synthesized and played.
         """
-        if self._client is not None:
-            try:
-                audio = self._client.generate(
-                    text=mytext,
-                    voice=self.config.get("tts.elevenlabs.voice", "Brian"),
-                    model=self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2"),
-                )
-                play(audio)
-            except Exception as e:
-                self.logger.error(f"Error with ElevenLabs: {e}")
+        if self._el_client is None:
+            self.logger.error("ElevenLabs client not initialized")
+            return
+
+        try:
+            voice = self.config.get("tts.elevenlabs.voice", "Brian")
+            model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
+
+            self.logger.debug(f"Generating speech with ElevenLabs: voice={voice}, model={model}")
+
+            audio = self._el_client.generate(
+                text=mytext,
+                voice=voice,
+                model=model,
+            )
+            play(audio)
+        except Exception as e:
+            self.logger.error(f"Error with ElevenLabs: {e}")
+            # Fallback to Kokoro if available
+            if self._client is not None:
+                self.logger.info("Falling back to Kokoro for this request")
+                self._text2speech_kokoro(mytext)
 
     def _text2speech_kokoro(self, mytext: str) -> None:
         """Perform TTS using the Kokoro model with configured settings.
@@ -181,7 +253,7 @@ class Text2Speech:
             speed = self.config.kokoro_speed
             split_pattern = self.config.kokoro_split_pattern
 
-            self.logger.debug(f"Generating speech: voice={voice}, speed={speed}")
+            self.logger.debug(f"Generating speech with Kokoro: voice={voice}, speed={speed}")
 
             generator = self._client(mytext, voice=voice, speed=speed, split_pattern=split_pattern)
 
@@ -285,3 +357,11 @@ class Text2Speech:
         if HAS_SOUNDDEVICE and sd:
             return sd.query_devices()
         return []
+
+    def is_using_elevenlabs(self) -> bool:
+        """Check if currently using ElevenLabs.
+
+        Returns:
+            bool: True if using ElevenLabs, False if using Kokoro.
+        """
+        return self._use_elevenlabs and self._el_client is not None
