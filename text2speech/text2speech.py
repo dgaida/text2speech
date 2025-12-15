@@ -37,6 +37,7 @@ except (ImportError, OSError) as e:
 import threading
 
 from .config import Config
+from .audio_queue import AudioQueueManager
 
 
 class Text2Speech:
@@ -46,6 +47,9 @@ class Text2Speech:
     (when a valid API key is provided) or Kokoro model (as fallback) with
     configuration support via YAML files. Supports asynchronous speech synthesis
     and safe audio playback with dynamic resampling.
+
+    Features thread-safe audio playback via AudioQueueManager to prevent
+    ALSA/PortAudio device conflicts.
     """
 
     def __init__(
@@ -54,6 +58,9 @@ class Text2Speech:
         verbose: Optional[bool] = None,
         config_path: Optional[str] = None,
         config: Optional[Config] = None,
+        enable_queue: bool = True,  # NEW: Enable audio queue by default
+        max_queue_size: int = 50,
+        duplicate_timeout: float = 2.0,
     ) -> None:
         """Initialize the Text2Speech instance.
 
@@ -62,6 +69,9 @@ class Text2Speech:
             verbose (bool, optional): If True, prints debug info. Overrides config if set.
             config_path (str, optional): Path to config.yaml file.
             config (Config, optional): Pre-loaded Config object. Takes precedence over config_path.
+            enable_queue: If True, uses AudioQueueManager for thread-safe playback.
+            max_queue_size: Maximum queued messages (only if enable_queue=True).
+            duplicate_timeout: Skip duplicate messages within this window (seconds).
         """
         # Load configuration
         if config is not None:
@@ -96,6 +106,36 @@ class Text2Speech:
                     self.logger.info(f"Audio output device set to: {device_id}")
                 except Exception as e:
                     self.logger.error(f"Failed to set audio device {device_id}: {e}")
+
+        # ✅ NEW: Initialize audio queue manager
+        self._enable_queue = enable_queue
+        self._audio_queue = None
+
+        if enable_queue:
+            self._audio_queue = AudioQueueManager(
+                tts_callable=self._text2speech_sync,  # Synchronous TTS function
+                max_queue_size=max_queue_size,
+                duplicate_timeout=duplicate_timeout,
+                logger=self.logger,
+            )
+            self._audio_queue.start()
+            self.logger.info("Audio queue manager enabled")
+        else:
+            self.logger.info("Audio queue manager disabled (using legacy threading)")
+
+    def __del__(self):
+        """Cleanup on deletion."""
+        self.shutdown()
+
+    def shutdown(self, timeout: float = 5.0):
+        """
+        Shutdown the TTS system cleanly.
+
+        Args:
+            timeout: Maximum seconds to wait for queue to empty
+        """
+        if self._audio_queue is not None:
+            self._audio_queue.shutdown(timeout=timeout)
 
     def _validate_elevenlabs_key(self, api_key: Optional[str]) -> bool:
         """Validate ElevenLabs API key format.
@@ -191,6 +231,43 @@ class Text2Speech:
             self.logger.error(f"Unknown TTS engine: {engine}")
             self._client = None
 
+    def speak(self, text: str, priority: int = 0, blocking: bool = False) -> bool:
+        """
+        Queue text for speech synthesis (NEW unified API).
+
+        Args:
+            text: Text to speak
+            priority: Priority level (0-100, higher = more urgent)
+            blocking: If True, wait for speech to complete
+
+        Returns:
+            True if successfully queued/spoken, False otherwise
+        """
+        if self._enable_queue:
+            # Use queue manager (non-blocking by default)
+            success = self._audio_queue.enqueue(text, priority=priority)
+
+            # If blocking requested, wait for queue to empty
+            if blocking and success:
+                # Wait for this message to be processed
+                # (simplified - doesn't track specific message)
+                import time
+
+                time.sleep(0.1)
+                while self._audio_queue._queue.qsize() > 0:
+                    time.sleep(0.1)
+
+            return success
+        else:
+            # Legacy behavior: spawn thread
+            if blocking:
+                self._text2speech_sync(text)
+                return True
+            else:
+                thread = threading.Thread(target=self._text2speech_sync, args=(text,))
+                thread.start()
+                return True
+
     def call_text2speech_async(self, text: str) -> threading.Thread:
         """Call text-to-speech asynchronously using the configured TTS engine.
 
@@ -208,6 +285,30 @@ class Text2Speech:
 
         thread.start()
         return thread
+
+    def call_text2speech(self, text: str):
+        """
+        Synchronous TTS call (blocks until complete).
+
+        Args:
+            text: Text to speak
+        """
+        self._text2speech_sync(text)
+
+    def _text2speech_sync(self, text: str) -> None:
+        """
+        Synchronous TTS execution (blocks until complete).
+
+        This is the actual TTS function that gets called by the queue manager.
+
+        Args:
+            text: Text to synthesize
+        """
+        # Use ElevenLabs if available and initialized
+        if self._use_elevenlabs and self._el_client is not None:
+            self._text2speech_elevenlabs(text)
+        else:
+            self._text2speech_kokoro(text)
 
     def _text2speech_elevenlabs(self, mytext: str) -> None:
         """Perform TTS using ElevenLabs API.
@@ -365,3 +466,9 @@ class Text2Speech:
             bool: True if using ElevenLabs, False if using Kokoro.
         """
         return self._use_elevenlabs and self._el_client is not None
+
+    def get_queue_stats(self) -> dict:
+        """Get audio queue statistics (only if queue enabled)."""
+        if self._audio_queue is not None:
+            return self._audio_queue.get_stats()
+        return {}
