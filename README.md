@@ -1,8 +1,8 @@
 # text2speech
 
-The **text2speech** module provides **text-to-speech (TTS)** functionality for robotics and other applications. It supports asynchronous text-to-speech generation and robust, safe audio playback.
+The **text2speech** module provides **text-to-speech (TTS)** functionality for robotics and other applications. It supports asynchronous text-to-speech generation, thread-safe audio queueing, and robust audio playback.
 
-Although initially designed to use **ElevenLabs**, this implementation now relies on the **Kokoro** model for speech synthesis.
+Although initially designed to use **ElevenLabs**, this implementation now relies on the **Kokoro** model for speech synthesis, featuring an advanced audio queue manager for conflict-free playback.
 
 ---
 
@@ -21,11 +21,16 @@ Although initially designed to use **ElevenLabs**, this implementation now relie
 
 ## Features
 
+- ✅ **Thread-safe audio queue** - Prevents ALSA/PortAudio conflicts with serialized playback
 - ✅ Asynchronous text-to-speech synthesis
-- ✅ Uses **Kokoro** for natural-sounding voices
+- ✅ Uses **Kokoro-82M** for natural-sounding voices (Apache 2.0 licensed)
+- ✅ Priority-based message queueing
+- ✅ Automatic duplicate message detection
+- ✅ YAML-based configuration system
 - ✅ Automatic resampling and volume normalization for playback
 - ✅ Safe, thread-based audio playback
-- ✅ Support for multiple languages
+- ✅ Support for multiple languages and voices
+- ✅ Command-line interface
 - ✅ Comprehensive test suite with >90% coverage
 - ⚙️ Legacy ElevenLabs integration retained for backward compatibility (disabled by default)
 
@@ -61,52 +66,186 @@ pip install elevenlabs
 
 ## Quick Start
 
-### Basic Usage
+### Basic Usage with Queue (Recommended)
 
 ```python
 from text2speech import Text2Speech
 
-# Initialize the TTS system
+# Initialize the TTS system (queue enabled by default)
 tts = Text2Speech(el_api_key="dummy_key", verbose=True)
 
+# Queue messages for playback (non-blocking)
+tts.speak("Hello, this is your robot speaking!")
+tts.speak("This message will play after the first one.")
+
+# High-priority urgent message
+tts.speak("Warning: Low battery!", priority=10)
+
+# Cleanup when done
+tts.shutdown()
+```
+
+### Blocking Mode (Wait for Completion)
+
+```python
+from text2speech import Text2Speech
+
+tts = Text2Speech(el_api_key="dummy_key")
+
+# Wait for speech to complete before continuing
+tts.speak("Please wait for this message.", blocking=True)
+print("Message finished!")
+
+tts.shutdown()
+```
+
+### Legacy Async Mode (Without Queue)
+
+```python
+from text2speech import Text2Speech
+
+# Disable queue for legacy threading behavior
+tts = Text2Speech(el_api_key="dummy_key", enable_queue=False)
+
 # Generate and play speech asynchronously
-thread = tts.call_text2speech_async("Hello, this is your robot speaking!")
+thread = tts.call_text2speech_async("Hello, world!")
 thread.join()  # Wait for speech playback to complete
 ```
 
-### Multiple Sentences
+### Configuration File
 
-```python
-from text2speech import Text2Speech
+Create a `config.yaml` file:
 
-tts = Text2Speech(el_api_key="dummy_key")
+```yaml
+audio:
+  output_device: null  # null = system default
+  default_volume: 0.8
+  sample_rate: 24000
 
-sentences = [
-    "This is the first sentence.",
-    "Now I'm saying something else.",
-    "And finally, this is the last part."
-]
+tts:
+  engine: "kokoro"
+  kokoro:
+    lang_code: "a"  # 'a' = American, 'b' = British
+    voice: "af_heart"  # See voice options below
+    speed: 1.0
 
-for sentence in sentences:
-    thread = tts.call_text2speech_async(sentence)
-    thread.join()
+logging:
+  verbose: false
+  log_level: "INFO"
+
+performance:
+  use_gpu: true
 ```
 
-### Multilingual Support
+Then use it:
 
 ```python
 from text2speech import Text2Speech
 
+tts = Text2Speech(config_path="config.yaml")
+tts.speak("Configured speech!")
+tts.shutdown()
+```
+
+### Command-Line Interface
+
+```bash
+# Basic usage
+text2speech "Hello, world!"
+
+# With custom voice
+text2speech "Hello" --voice am_adam
+
+# With custom config
+text2speech "Hello" --config my_config.yaml
+```
+
+---
+
+## Available Voices
+
+### American English (`lang_code: "a"`)
+- `af_heart` - Female, warm and clear (default)
+- `af_nicole` - Female, professional
+- `am_adam` - Male, deep and authoritative
+- `am_michael` - Male, friendly
+
+### British English (`lang_code: "b"`)
+- `bf_emma` - Female, elegant
+- `bf_isabella` - Female, sophisticated
+- `bm_lewis` - Male, refined
+- `bm_george` - Male, distinguished
+
+### Voice Selection
+
+```python
 tts = Text2Speech(el_api_key="dummy_key")
 
-# English
-tts.call_text2speech_async("Welcome to the demonstration.").join()
+# Change voice at runtime
+tts.set_voice("am_adam")
+tts.speak("Speaking with Adam's voice")
 
-# German
-tts.call_text2speech_async("Willkommen zur Demonstration.").join()
+# Adjust speed (0.5 to 2.0)
+tts.set_speed(1.2)
 
-# Spanish
-tts.call_text2speech_async("Bienvenido a la demostración.").join()
+# Adjust volume (0.0 to 1.0)
+tts.set_volume(0.7)
+
+tts.shutdown()
+```
+
+---
+
+## Audio Queue Features
+
+The audio queue manager prevents ALSA/PortAudio device conflicts by serializing audio playback.
+
+### Key Features
+
+- **Priority Queue**: Urgent messages play first
+- **Duplicate Detection**: Skips repeated messages within timeout window
+- **Non-blocking**: Queue messages and continue execution
+- **Statistics Tracking**: Monitor queue performance
+- **Automatic Cleanup**: Graceful shutdown handling
+
+### Queue Statistics
+
+```python
+tts = Text2Speech(el_api_key="dummy_key")
+
+# Queue several messages
+tts.speak("Message 1")
+tts.speak("Message 2")
+tts.speak("Urgent!", priority=10)
+
+# Check statistics
+stats = tts.get_queue_stats()
+print(stats)
+# {
+#     'messages_queued': 3,
+#     'messages_played': 1,
+#     'messages_skipped_duplicate': 0,
+#     'messages_skipped_full': 0,
+#     'errors': 0
+# }
+
+tts.shutdown()
+```
+
+### Custom Queue Settings
+
+```python
+from text2speech import Text2Speech
+
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    enable_queue=True,
+    max_queue_size=100,  # Larger queue
+    duplicate_timeout=5.0  # 5 second duplicate detection window
+)
+
+tts.speak("Custom queue settings")
+tts.shutdown()
 ```
 
 ---
@@ -159,11 +298,11 @@ pytest --cov=text2speech --cov-report=term --cov-report=html
 # Test initialization
 pytest tests/test_text2speech.py::TestText2SpeechInitialization
 
-# Test async functionality
-pytest tests/test_text2speech.py::TestText2SpeechAsync
+# Test audio queue
+pytest tests/test_audio_queue.py::TestAudioQueueManager
 
-# Test audio playback
-pytest tests/test_text2speech.py::TestAudioPlayback
+# Test configuration
+pytest tests/test_config.py::TestConfigDefaults
 ```
 
 ### Test Coverage
@@ -171,7 +310,10 @@ pytest tests/test_text2speech.py::TestAudioPlayback
 The test suite includes:
 - ✅ Initialization tests
 - ✅ Asynchronous operation tests
+- ✅ Audio queue management tests
+- ✅ Configuration system tests
 - ✅ Audio generation and playback tests
+- ✅ Command-line interface tests
 - ✅ Error handling tests
 - ✅ Edge case tests
 - ✅ Integration tests
@@ -180,34 +322,57 @@ The test suite includes:
 
 ## Architecture
 
-### Text-to-Speech Pipeline
+### Text-to-Speech Pipeline with Queue
 
 ```
-User Input → Text2Speech → Kokoro Model → Audio Tensor →
-Resampling → Volume Normalization → Audio Playback
+User Input → Text2Speech → AudioQueueManager → Worker Thread →
+Kokoro Model → Audio Tensor → Resampling → Volume Normalization →
+Audio Playback
 ```
 
 ### Key Components
 
 1. **Text2Speech**: Main class coordinating TTS operations
-2. **Kokoro Pipeline**: Speech synthesis engine
-3. **Audio Processing**: Resampling and normalization
-4. **Safe Playback**: Thread-safe audio output with error handling
+2. **AudioQueueManager**: Thread-safe priority queue for audio playback
+3. **Config**: YAML-based configuration management
+4. **Kokoro Pipeline**: Speech synthesis engine (82M parameters)
+5. **Audio Processing**: Resampling and normalization
+6. **Safe Playback**: Thread-safe audio output with error handling
 
 ---
 
-## Advanced Configuration
+## Advanced Usage
 
-### Custom Audio Device
+### Multiple TTS Instances
 
 ```python
-# In _play_audio_safely, specify a custom device
-Text2Speech._play_audio_safely(
-    audio_tensor=audio,
-    original_sample_rate=24000,
-    device=5,  # Custom device ID
-    volume=0.8
-)
+from text2speech import Text2Speech
+
+# Robot voice
+robot_tts = Text2Speech(el_api_key="dummy_key")
+robot_tts.set_voice("am_adam")
+robot_tts.set_speed(1.1)
+
+# Narrator voice
+narrator_tts = Text2Speech(el_api_key="dummy_key")
+narrator_tts.set_voice("bm_lewis")
+narrator_tts.set_speed(0.95)
+
+robot_tts.speak("I am a robot.")
+narrator_tts.speak("The narrator speaks.")
+
+robot_tts.shutdown()
+narrator_tts.shutdown()
+```
+
+### Context Manager Support
+
+```python
+from text2speech import Text2Speech
+
+with Text2Speech(el_api_key="dummy_key") as tts:
+    tts.speak("Automatic cleanup!")
+    # Shutdown called automatically
 ```
 
 ### Adjusting Voice and Speed
@@ -215,21 +380,10 @@ Text2Speech._play_audio_safely(
 Modify the `_text2speech_kokoro` method to change voice characteristics:
 
 ```python
-generator = self._client(
-    mytext,
-    voice='af_heart',  # Change voice
-    speed=1.2,         # Adjust speed (0.5 - 2.0)
-    split_pattern=r'\n+'
-)
+tts.set_voice('af_heart')  # Change voice
+tts.set_speed(1.2)         # Adjust speed (0.5 - 2.0)
+tts.set_volume(0.8)        # Adjust volume (0.0 - 1.0)
 ```
-
-### Available Voices
-
-Kokoro supports multiple voices. Common options include:
-- `'af_heart'` - American Female (default)
-- `'am_adam'` - American Male
-- `'bf_emma'` - British Female
-- `'bm_lewis'` - British Male
 
 ---
 
@@ -293,6 +447,23 @@ sd.play(np.random.randn(24000), samplerate=24000)
 sd.wait()
 ```
 
+3. Set specific device in config:
+```yaml
+audio:
+  output_device: 2  # Replace with your device ID
+```
+
+### ALSA/PortAudio Errors
+
+If you see "device busy" errors:
+
+```python
+# Use the queue system (enabled by default)
+tts = Text2Speech(el_api_key="dummy_key", enable_queue=True)
+```
+
+The queue manager serializes audio playback to prevent conflicts.
+
 ### Import Errors
 
 If you encounter import errors:
@@ -310,17 +481,22 @@ python -c "import kokoro; import torch; import sounddevice"
 For slow performance:
 
 1. Ensure PyTorch is using GPU acceleration (if available)
-2. Reduce text length or split into smaller chunks
+2. Enable GPU in config:
+```yaml
+performance:
+  use_gpu: true
+```
 
 ---
 
 ## System Requirements
 
-- **Python**: 3.8 or higher
+- **Python**: 3.9 or higher
 - **Operating Systems**: Ubuntu, Windows, macOS
 - **Audio**: System with audio output device
-- **Memory**: Minimum 2GB RAM recommended
+- **Memory**: Minimum 2GB RAM recommended, 4GB for optimal performance
 - **Disk Space**: ~500MB for model files
+- **GPU** (optional): CUDA-capable GPU for faster inference
 
 ---
 
@@ -332,7 +508,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **Kokoro**: For providing the excellent TTS model
+- **Kokoro-82M**: For providing the excellent open-source TTS model (Apache 2.0)
 - **PyTorch**: For the deep learning framework
 - **sounddevice**: For audio playback capabilities
 - **ElevenLabs**: For initial inspiration (legacy support)
@@ -349,11 +525,14 @@ GitHub: [@dgaida](https://github.com/dgaida)
 
 ## Roadmap
 
+- [x] Audio queue manager for conflict-free playback
+- [x] YAML configuration system
+- [x] Command-line interface
 - [ ] Add support for custom voice models
 - [ ] Implement audio caching for repeated phrases
-- [ ] Add speech rate and pitch control
 - [ ] Support for SSML (Speech Synthesis Markup Language)
 - [ ] Real-time streaming TTS
 - [ ] Voice cloning capabilities
 - [ ] Web API endpoint for remote TTS
 - [ ] Docker containerization
+- [ ] Plugin system for custom audio processors

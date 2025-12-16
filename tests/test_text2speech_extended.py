@@ -177,24 +177,24 @@ class TestText2SpeechElevenLabs(unittest.TestCase):
             self.assertTrue(tts.is_using_elevenlabs())
             self.assertIsNotNone(tts._el_client)
 
+    @patch("text2speech.text2speech.HAS_ELEVENLABS", True)
     @patch("text2speech.text2speech.ElevenLabs")
     @patch("text2speech.text2speech.KPipeline")
     def test_elevenlabs_tts_call(self, mock_kpipeline, mock_elevenlabs):
         """Test ElevenLabs TTS call."""
-        # Mock the play function from elevenlabs module
-        with patch("text2speech.text2speech.play") as mock_play:
-            mock_el_client = Mock()
-            mock_audio = b"audio_data"
-            mock_el_client.generate.return_value = mock_audio
-            mock_elevenlabs.return_value = mock_el_client
+        # Mock the ElevenLabs client
+        mock_el_client = Mock()
+        mock_audio = b"audio_data"
+        mock_el_client.generate.return_value = mock_audio
+        mock_elevenlabs.return_value = mock_el_client
 
-            # Mock HAS_ELEVENLABS to be True
-            with patch("text2speech.text2speech.HAS_ELEVENLABS", True):
-                tts = Text2Speech(el_api_key="sk_validkey12345678901234567890", verbose=False, enable_queue=False)
-                tts._text2speech_elevenlabs("Test message")
+        # Patch the play function at the point where it's used
+        with patch("elevenlabs.play") as mock_play:
+            tts = Text2Speech(el_api_key="sk_validkey12345678901234567890", verbose=False, enable_queue=False)
+            tts._text2speech_elevenlabs("Test message")
 
-                mock_el_client.generate.assert_called_once()
-                mock_play.assert_called_once_with(mock_audio)
+            mock_el_client.generate.assert_called_once()
+            mock_play.assert_called_once_with(mock_audio)
 
     @patch("text2speech.text2speech.ElevenLabs")
     @patch("text2speech.text2speech.KPipeline")
@@ -414,18 +414,11 @@ class TestText2SpeechLogging(unittest.TestCase):
             config = Config()
             config.set("logging.log_file", log_file)
 
-            # Create a fresh logger for this test
-            logger_name = f"text2speech_test_{id(config)}"
-            with patch("text2speech.text2speech.logging.getLogger") as mock_get_logger:
-                mock_logger = logging_module.getLogger(logger_name)
-                mock_logger.handlers = []  # Clear any existing handlers
-                mock_get_logger.return_value = mock_logger
+            tts = Text2Speech(el_api_key="test_key", verbose=False, config=config, enable_queue=False)
 
-                tts = Text2Speech(el_api_key="test_key", verbose=False, config=config, enable_queue=False)
-
-                # Verify file handler was added
-                file_handlers = [h for h in tts.logger.handlers if isinstance(h, logging_module.FileHandler)]
-                self.assertGreater(len(file_handlers), 0)
+            # Verify file handler was added
+            file_handlers = [h for h in tts.logger.handlers if isinstance(h, logging_module.FileHandler)]
+            self.assertGreater(len(file_handlers), 0, "No FileHandler found in logger handlers")
 
         finally:
             # Cleanup

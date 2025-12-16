@@ -8,6 +8,7 @@ Complete API documentation for the text2speech module.
 
 - [Module Overview](#module-overview)
 - [Text2Speech Class](#text2speech-class)
+- [AudioQueueManager Class](#audioqueumanager-class)
 - [Config Class](#config-class)
 - [Exceptions](#exceptions)
 - [Type Hints](#type-hints)
@@ -18,7 +19,7 @@ Complete API documentation for the text2speech module.
 ## Module Overview
 
 ```python
-from text2speech import Text2Speech, Config
+from text2speech import Text2Speech, Config, AudioQueueManager
 ```
 
 ### Package Information
@@ -33,7 +34,7 @@ print(text2speech.__version__)  # "0.2.0"
 
 ## Text2Speech Class
 
-Main class for text-to-speech functionality with configurable settings.
+Main class for text-to-speech functionality with configurable settings and audio queue management.
 
 ### Constructor
 
@@ -42,7 +43,10 @@ Text2Speech(
     el_api_key: Optional[str] = None,
     verbose: Optional[bool] = None,
     config_path: Optional[str] = None,
-    config: Optional[Config] = None
+    config: Optional[Config] = None,
+    enable_queue: bool = True,
+    max_queue_size: int = 50,
+    duplicate_timeout: float = 2.0
 )
 ```
 
@@ -52,10 +56,13 @@ Initialize a Text2Speech instance.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `el_api_key` | `str` or `None` | `None` | API key for ElevenLabs (legacy, not used) |
+| `el_api_key` | `str` or `None` | `None` | API key for ElevenLabs (legacy, optional) |
 | `verbose` | `bool` or `None` | `None` | Enable verbose output (overrides config) |
 | `config_path` | `str` or `None` | `None` | Path to YAML configuration file |
 | `config` | `Config` or `None` | `None` | Pre-loaded Config object |
+| `enable_queue` | `bool` | `True` | Enable audio queue manager |
+| `max_queue_size` | `int` | `50` | Maximum queued messages |
+| `duplicate_timeout` | `float` | `2.0` | Skip duplicates within this window (seconds) |
 
 #### Returns
 
@@ -71,11 +78,19 @@ Initialize a Text2Speech instance.
 ```python
 from text2speech import Text2Speech
 
-# Basic initialization
+# Basic initialization with queue
 tts = Text2Speech(el_api_key="dummy_key")
 
 # With verbose mode
 tts = Text2Speech(el_api_key="dummy_key", verbose=True)
+
+# Custom queue settings
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    enable_queue=True,
+    max_queue_size=100,
+    duplicate_timeout=5.0
+)
 
 # With custom config file
 tts = Text2Speech(
@@ -83,16 +98,59 @@ tts = Text2Speech(
     config_path="/path/to/config.yaml"
 )
 
-# With Config object
-from text2speech import Config
-config = Config()
-config.set("audio.default_volume", 0.5)
-tts = Text2Speech(el_api_key="dummy_key", config=config)
+# Cleanup when done
+tts.shutdown()
 ```
 
 ---
 
 ### Methods
+
+#### `speak`
+
+```python
+def speak(text: str, priority: int = 0, blocking: bool = False) -> bool
+```
+
+Queue text for speech synthesis (NEW unified API).
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `text` | `str` | - | Text to convert to speech |
+| `priority` | `int` | `0` | Priority level (0-100, higher = more urgent) |
+| `blocking` | `bool` | `False` | If True, wait for speech to complete |
+
+##### Returns
+
+- `bool`: `True` if successfully queued/spoken, `False` otherwise
+
+##### Example
+
+```python
+tts = Text2Speech(el_api_key="dummy_key")
+
+# Queue message (non-blocking)
+tts.speak("Hello, world!")
+
+# High-priority message
+tts.speak("Warning!", priority=10)
+
+# Wait for completion
+tts.speak("Important message", blocking=True)
+
+tts.shutdown()
+```
+
+##### Notes
+
+- Non-blocking by default: returns immediately while speech is queued
+- Thread-safe: multiple calls can be made concurrently
+- Automatic duplicate detection within timeout window
+- Priority queue ensures urgent messages play first
+
+---
 
 #### `call_text2speech_async`
 
@@ -100,7 +158,7 @@ tts = Text2Speech(el_api_key="dummy_key", config=config)
 def call_text2speech_async(text: str) -> threading.Thread
 ```
 
-Generate and play speech asynchronously.
+Generate and play speech asynchronously (legacy method).
 
 ##### Parameters
 
@@ -115,7 +173,7 @@ Generate and play speech asynchronously.
 ##### Example
 
 ```python
-tts = Text2Speech(el_api_key="dummy_key")
+tts = Text2Speech(el_api_key="dummy_key", enable_queue=False)
 
 # Start async speech
 thread = tts.call_text2speech_async("Hello, world!")
@@ -128,9 +186,116 @@ thread.join()
 
 ##### Notes
 
-- Non-blocking: returns immediately while speech is generated in background
-- Thread-safe: multiple calls can be made concurrently
-- Automatic audio device management and error handling
+- Legacy method: consider using `speak()` instead
+- Works with or without queue enabled
+- Thread-safe audio playback with error handling
+
+---
+
+#### `call_text2speech`
+
+```python
+def call_text2speech(text: str) -> None
+```
+
+Synchronous TTS call (blocks until complete).
+
+##### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Text to convert to speech |
+
+##### Example
+
+```python
+tts = Text2Speech(el_api_key="dummy_key")
+
+# Synchronous call (blocks)
+tts.call_text2speech("Wait for me")
+
+print("Speech finished!")
+tts.shutdown()
+```
+
+---
+
+#### `shutdown`
+
+```python
+def shutdown(timeout: float = 5.0) -> None
+```
+
+Shutdown the TTS system cleanly.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `timeout` | `float` | `5.0` | Maximum seconds to wait for queue to empty |
+
+##### Example
+
+```python
+tts = Text2Speech(el_api_key="dummy_key")
+
+tts.speak("Message 1")
+tts.speak("Message 2")
+
+# Clean shutdown (waits for queue to empty)
+tts.shutdown(timeout=10.0)
+```
+
+##### Notes
+
+- Waits for queued messages to finish playing
+- Automatically called by `__del__` destructor
+- Safe to call multiple times
+
+---
+
+#### `get_queue_stats`
+
+```python
+def get_queue_stats() -> dict
+```
+
+Get audio queue statistics.
+
+##### Returns
+
+- `dict`: Statistics dictionary with keys:
+  - `messages_queued`: Total messages queued
+  - `messages_played`: Total messages played
+  - `messages_skipped_duplicate`: Duplicates skipped
+  - `messages_skipped_full`: Messages rejected (queue full)
+  - `errors`: Total errors encountered
+
+##### Example
+
+```python
+tts = Text2Speech(el_api_key="dummy_key")
+
+tts.speak("Test 1")
+tts.speak("Test 2")
+
+stats = tts.get_queue_stats()
+print(stats)
+# {
+#     'messages_queued': 2,
+#     'messages_played': 1,
+#     'messages_skipped_duplicate': 0,
+#     'messages_skipped_full': 0,
+#     'errors': 0
+# }
+
+tts.shutdown()
+```
+
+##### Notes
+
+- Returns empty dict `{}` if queue is disabled
+- Updated in real-time as messages are processed
 
 ---
 
@@ -178,10 +343,9 @@ tts = Text2Speech(el_api_key="dummy_key")
 
 # Change to male voice
 tts.set_voice("am_adam")
+tts.speak("Speaking with new voice")
 
-# Generate speech with new voice
-thread = tts.call_text2speech_async("Speaking with new voice")
-thread.join()
+tts.shutdown()
 ```
 
 ##### Available Voices
@@ -224,6 +388,8 @@ tts.set_speed(0.8)
 
 # Fast speech (120% of normal)
 tts.set_speed(1.2)
+
+tts.shutdown()
 ```
 
 ##### Notes
@@ -258,6 +424,8 @@ tts.set_volume(0.4)
 
 # Loud (90% volume)
 tts.set_volume(0.9)
+
+tts.shutdown()
 ```
 
 ##### Notes
@@ -288,6 +456,8 @@ tts = Text2Speech(el_api_key="dummy_key")
 devices = tts.get_available_devices()
 for i, device in enumerate(devices):
     print(f"{i}: {device['name']}")
+
+tts.shutdown()
 ```
 
 ##### Output Format
@@ -302,6 +472,31 @@ for i, device in enumerate(devices):
     },
     ...
 ]
+```
+
+---
+
+#### `is_using_elevenlabs`
+
+```python
+def is_using_elevenlabs() -> bool
+```
+
+Check if currently using ElevenLabs API.
+
+##### Returns
+
+- `bool`: `True` if using ElevenLabs, `False` if using Kokoro
+
+##### Example
+
+```python
+tts = Text2Speech(el_api_key="sk_validkey123")
+
+if tts.is_using_elevenlabs():
+    print("Using ElevenLabs TTS")
+else:
+    print("Using Kokoro TTS")
 ```
 
 ---
@@ -349,12 +544,123 @@ Text2Speech._play_audio_safely(
 )
 ```
 
-##### Notes
+---
 
-- Automatically resamples to device's native sample rate
-- Normalizes amplitude to prevent clipping
-- Applies volume scaling
-- Handles errors gracefully with logging
+## AudioQueueManager Class
+
+Thread-safe audio queue manager for serialized playback.
+
+### Constructor
+
+```python
+AudioQueueManager(
+    tts_callable: Callable[[str], None],
+    max_queue_size: int = 50,
+    duplicate_timeout: float = 2.0,
+    logger: Optional[logging.Logger] = None
+)
+```
+
+Initialize the audio queue manager.
+
+#### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `tts_callable` | `Callable` | - | Synchronous TTS function |
+| `max_queue_size` | `int` | `50` | Maximum queued messages |
+| `duplicate_timeout` | `float` | `2.0` | Skip duplicates within window (seconds) |
+| `logger` | `Logger` or `None` | `None` | Optional logger instance |
+
+#### Example
+
+```python
+from text2speech.audio_queue import AudioQueueManager
+
+def my_tts(text):
+    print(f"Speaking: {text}")
+
+manager = AudioQueueManager(my_tts)
+manager.start()
+
+manager.enqueue("Hello")
+manager.enqueue("World")
+
+manager.shutdown()
+```
+
+---
+
+### Methods
+
+#### `start`
+
+```python
+def start() -> None
+```
+
+Start the worker thread.
+
+---
+
+#### `shutdown`
+
+```python
+def shutdown(timeout: float = 5.0) -> None
+```
+
+Stop the worker thread and wait for completion.
+
+---
+
+#### `enqueue`
+
+```python
+def enqueue(text: str, priority: int = 0) -> bool
+```
+
+Queue a message for audio playback (non-blocking).
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `text` | `str` | - | Message to speak |
+| `priority` | `int` | `0` | Priority (higher = more urgent) |
+
+##### Returns
+
+- `bool`: `True` if queued successfully, `False` if skipped/failed
+
+---
+
+#### `clear_queue`
+
+```python
+def clear_queue() -> None
+```
+
+Clear all pending messages from queue.
+
+---
+
+#### `get_stats`
+
+```python
+def get_stats() -> dict
+```
+
+Get playback statistics.
+
+---
+
+#### `is_running`
+
+```python
+def is_running() -> bool
+```
+
+Check if worker thread is active.
 
 ---
 
@@ -583,31 +889,7 @@ The module uses standard Python exceptions:
 | `yaml.YAMLError` | Invalid YAML syntax | Malformed config file |
 | `ValueError` | Invalid parameter value | Speed outside 0.5-2.0 |
 | `ImportError` | Missing dependency | Kokoro or sounddevice not installed |
-
-### Error Handling Example
-
-```python
-from text2speech import Text2Speech, Config
-import yaml
-
-try:
-    # Try to load config
-    config = Config("config.yaml")
-    tts = Text2Speech(el_api_key="dummy_key", config=config)
-
-    # Try speech generation
-    thread = tts.call_text2speech_async("Test")
-    thread.join()
-
-except FileNotFoundError as e:
-    print(f"Config file not found: {e}")
-except yaml.YAMLError as e:
-    print(f"Invalid config format: {e}")
-except ImportError as e:
-    print(f"Missing dependency: {e}")
-except Exception as e:
-    print(f"Unexpected error: {e}")
-```
+| `queue.Full` | Queue at capacity | Too many messages queued |
 
 ---
 
@@ -618,39 +900,10 @@ The module includes complete type hints for better IDE support.
 ### Imports
 
 ```python
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Callable
 import threading
 import torch
-```
-
-### Example with Type Hints
-
-```python
-from text2speech import Text2Speech, Config
-from typing import Optional
-import threading
-
-def generate_speech(
-    text: str,
-    voice: Optional[str] = None,
-    speed: float = 1.0
-) -> threading.Thread:
-    """Generate speech with optional parameters."""
-    tts = Text2Speech(el_api_key="dummy_key")
-
-    if voice:
-        tts.set_voice(voice)
-    tts.set_speed(speed)
-
-    return tts.call_text2speech_async(text)
-
-# Usage
-thread: threading.Thread = generate_speech(
-    "Hello",
-    voice="am_adam",
-    speed=1.2
-)
-thread.join()
+import logging
 ```
 
 ---
@@ -666,160 +919,67 @@ from text2speech import Text2Speech
 tts = Text2Speech(el_api_key="dummy_key")
 
 # Simple speech
-thread = tts.call_text2speech_async("Hello, world!")
-thread.join()
+tts.speak("Hello, world!")
+
+# Cleanup
+tts.shutdown()
 ```
 
-### With Configuration
-
-```python
-from text2speech import Text2Speech, Config
-
-# Create custom config
-config = Config()
-config.set("tts.kokoro.voice", "bf_emma")
-config.set("tts.kokoro.speed", 0.9)
-config.set("audio.default_volume", 0.7)
-
-# Use config
-tts = Text2Speech(el_api_key="dummy_key", config=config)
-thread = tts.call_text2speech_async("Configured speech")
-thread.join()
-```
-
-### Multiple Sequential Speeches
+### With Priority Queue
 
 ```python
 from text2speech import Text2Speech
 
 tts = Text2Speech(el_api_key="dummy_key")
 
-sentences = [
-    "First sentence.",
-    "Second sentence.",
-    "Third sentence."
-]
+# Normal priority
+tts.speak("Loading data...")
 
-for sentence in sentences:
-    thread = tts.call_text2speech_async(sentence)
-    thread.join()  # Wait for each to complete
+# High priority (plays first)
+tts.speak("Error occurred!", priority=10)
+
+# Low priority
+tts.speak("Background task complete", priority=1)
+
+tts.shutdown()
 ```
 
-### Dynamic Voice Switching
+### Blocking Mode
 
 ```python
 from text2speech import Text2Speech
 
 tts = Text2Speech(el_api_key="dummy_key")
 
-# Narrator voice
-tts.set_voice("bm_lewis")
-tts.call_text2speech_async("The story begins...").join()
+# Wait for completion
+tts.speak("Please wait", blocking=True)
+print("Speech finished!")
 
-# Character 1 voice
-tts.set_voice("af_heart")
-tts.call_text2speech_async("Hello, my friend!").join()
-
-# Character 2 voice
-tts.set_voice("am_adam")
-tts.call_text2speech_async("Good to see you!").join()
+tts.shutdown()
 ```
 
-### Audio Device Selection
-
-```python
-from text2speech import Text2Speech, Config
-
-# List devices
-tts = Text2Speech(el_api_key="dummy_key")
-devices = tts.get_available_devices()
-
-for i, device in enumerate(devices):
-    if device['max_output_channels'] > 0:
-        print(f"{i}: {device['name']}")
-
-# Use specific device
-config = Config()
-config.set("audio.output_device", 3)  # Select device 3
-tts = Text2Speech(el_api_key="dummy_key", config=config)
-```
-
-### Error Handling
+### Queue Statistics
 
 ```python
 from text2speech import Text2Speech
-import logging
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-
-try:
-    tts = Text2Speech(el_api_key="dummy_key", verbose=True)
-    thread = tts.call_text2speech_async("Test")
-    thread.join()
-    print("✓ Speech completed successfully")
-
-except Exception as e:
-    print(f"✗ Error: {e}")
-```
-
-### Speed and Volume Control
-
-```python
-from text2speech import Text2Speech
+import time
 
 tts = Text2Speech(el_api_key="dummy_key")
 
-# Slow and quiet
-tts.set_speed(0.8)
-tts.set_volume(0.4)
-tts.call_text2speech_async("Slow and quiet speech").join()
+# Queue messages
+for i in range(5):
+    tts.speak(f"Message {i}")
 
-# Fast and loud
-tts.set_speed(1.3)
-tts.set_volume(0.9)
-tts.call_text2speech_async("Fast and loud speech").join()
+# Wait a bit
+time.sleep(2)
+
+# Check stats
+stats = tts.get_queue_stats()
+print(f"Queued: {stats['messages_queued']}")
+print(f"Played: {stats['messages_played']}")
+
+tts.shutdown()
 ```
-
-### Saving Custom Configuration
-
-```python
-from text2speech import Config
-
-# Create and customize config
-config = Config()
-config.set("audio.output_device", 2)
-config.set("audio.default_volume", 0.75)
-config.set("tts.kokoro.voice", "am_michael")
-config.set("tts.kokoro.speed", 1.1)
-config.set("logging.verbose", True)
-
-# Save for future use
-config.save_to_file("my_tts_config.yaml")
-
-# Load later
-config2 = Config("my_tts_config.yaml")
-```
-
----
-
-## Version History
-
-### v0.2.0 (Current)
-- Added `Config` class for YAML configuration
-- Added configuration properties
-- Added `set_voice`, `set_speed`, `set_volume` methods
-- Added `get_available_devices` method
-- Improved logging system
-- Enhanced error handling
-
-### v0.1.0
-- Initial release
-- Basic Kokoro TTS support
-- Asynchronous speech generation
-- Audio resampling and normalization
-
----
 
 ## See Also
 

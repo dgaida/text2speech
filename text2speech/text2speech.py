@@ -173,21 +173,23 @@ class Text2Speech:
         self.logger = logging.getLogger("text2speech")
         self.logger.setLevel(getattr(logging, log_level))
 
-        # Console handler
+        # Formatter
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+        # Console handler - only add if no handlers exist
         if not self.logger.handlers:
             console_handler = logging.StreamHandler()
             console_handler.setLevel(getattr(logging, log_level))
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             console_handler.setFormatter(formatter)
             self.logger.addHandler(console_handler)
 
-            # File handler if specified
-            log_file = self.config.get("logging.log_file")
-            if log_file:
-                file_handler = logging.FileHandler(log_file)
-                file_handler.setLevel(getattr(logging, log_level))
-                file_handler.setFormatter(formatter)
-                self.logger.addHandler(file_handler)
+        # File handler if specified - always add if configured
+        log_file = self.config.get("logging.log_file")
+        if log_file:
+            file_handler = logging.FileHandler(log_file)
+            file_handler.setLevel(getattr(logging, log_level))
+            file_handler.setFormatter(formatter)
+            self.logger.addHandler(file_handler)
 
     def _initialize_tts_engine(self) -> None:
         """Initialize the TTS engine based on configuration and API key."""

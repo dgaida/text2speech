@@ -13,6 +13,7 @@ This guide explains how to configure the text2speech module for different use ca
   - [TTS Settings](#tts-settings)
   - [Logging Settings](#logging-settings)
   - [Performance Settings](#performance-settings)
+- [Queue Settings](#queue-settings)
 - [Usage Examples](#usage-examples)
 - [Advanced Configuration](#advanced-configuration)
 - [Audio Device Selection](#audio-device-selection)
@@ -27,13 +28,15 @@ The text2speech module uses YAML configuration files to manage settings. Configu
 - Loaded from default locations
 - Specified via file path
 - Modified programmatically at runtime
+- Overridden by constructor parameters
 
 ### Configuration Priority
 
-1. **Programmatic overrides** (highest priority)
-2. **Specified config file** (`config_path` parameter)
-3. **Default search locations**
-4. **Built-in defaults** (lowest priority)
+1. **Constructor parameters** (highest priority) - e.g., `enable_queue=True`
+2. **Programmatic overrides** - e.g., `tts.set_voice("am_adam")`
+3. **Specified config file** (`config_path` parameter)
+4. **Default search locations**
+5. **Built-in defaults** (lowest priority)
 
 ---
 
@@ -158,7 +161,7 @@ tts:
 #### Available Voices
 
 **American English (`lang_code: "a"`)**:
-- `af_heart` - Female, warm and clear
+- `af_heart` - Female, warm and clear (default)
 - `af_nicole` - Female, professional
 - `am_adam` - Male, deep and authoritative
 - `am_michael` - Male, friendly
@@ -292,6 +295,47 @@ performance:
 
 ---
 
+## Queue Settings
+
+Configure audio queue behavior (set via constructor, not config file).
+
+### Constructor Parameters
+
+```python
+Text2Speech(
+    enable_queue=True,          # Enable queue manager
+    max_queue_size=50,          # Maximum queued messages
+    duplicate_timeout=2.0       # Skip duplicates within window (seconds)
+)
+```
+
+### Examples
+
+**Disable queue (legacy mode)**:
+```python
+tts = Text2Speech(el_api_key="dummy_key", enable_queue=False)
+```
+
+**Large queue for busy applications**:
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    enable_queue=True,
+    max_queue_size=200,
+    duplicate_timeout=5.0
+)
+```
+
+**Strict duplicate detection**:
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    duplicate_timeout=10.0  # 10 second window
+)
+```
+
+---
+
 ## Usage Examples
 
 ### Basic Usage with Config
@@ -313,6 +357,9 @@ tts = Text2Speech(
     el_api_key="dummy_key",
     verbose=True
 )
+
+tts.speak("Hello!")
+tts.shutdown()
 ```
 
 ### Programmatic Configuration
@@ -328,6 +375,8 @@ config.set("tts.kokoro.speed", 1.2)
 
 # Use custom config
 tts = Text2Speech(el_api_key="dummy_key", config=config)
+tts.speak("Configured speech")
+tts.shutdown()
 ```
 
 ### Runtime Configuration Changes
@@ -347,8 +396,9 @@ tts.set_speed(1.5)
 tts.set_volume(0.6)
 
 # Generate speech with new settings
-thread = tts.call_text2speech_async("Hello with new settings")
-thread.join()
+tts.speak("Hello with new settings")
+
+tts.shutdown()
 ```
 
 ### Saving Configuration
@@ -405,6 +455,12 @@ tts_presentation = Text2Speech(
     el_api_key="dummy_key",
     config_path="config_presentation.yaml"
 )
+
+tts_robot.speak("Robot speaking")
+tts_presentation.speak("Presentation mode")
+
+tts_robot.shutdown()
+tts_presentation.shutdown()
 ```
 
 ### Environment-Specific Configs
@@ -421,6 +477,9 @@ tts = Text2Speech(
     el_api_key="dummy_key",
     config_path=config_path
 )
+
+tts.speak("Environment-specific config")
+tts.shutdown()
 ```
 
 ### Conditional Configuration
@@ -441,6 +500,8 @@ else:
     print("Using CPU with 2 threads")
 
 tts = Text2Speech(el_api_key="dummy_key", config=config)
+tts.speak("Hardware-optimized config")
+tts.shutdown()
 ```
 
 ---
@@ -482,6 +543,8 @@ config = Config()
 config.set("audio.output_device", 1)
 
 tts = Text2Speech(el_api_key="dummy_key", config=config)
+tts.speak("Using USB headphones")
+tts.shutdown()
 ```
 
 **At runtime**:
@@ -551,8 +614,9 @@ test_text = "This is a voice sample for comparison."
 for voice in voices:
     print(f"\nTesting voice: {voice}")
     tts.set_voice(voice)
-    thread = tts.call_text2speech_async(test_text)
-    thread.join()
+    tts.speak(test_text, blocking=True)
+
+tts.shutdown()
 ```
 
 ---
@@ -566,11 +630,13 @@ for voice in voices:
 - Use environment-specific configs
 - Document custom settings
 - Test configuration changes
+- Use queue system for multi-threaded applications
 
 ❌ **Don't**:
 - Hardcode settings in application code
 - Use extreme values (volume > 1.0, speed > 2.0)
 - Ignore default settings without reason
+- Disable queue without understanding implications
 
 ### 2. Audio Quality
 
@@ -601,7 +667,29 @@ performance:
   num_threads: 2
 ```
 
-### 4. Logging Strategy
+### 4. Queue Configuration
+
+**For high-traffic applications**:
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    enable_queue=True,
+    max_queue_size=200,
+    duplicate_timeout=5.0
+)
+```
+
+**For simple applications**:
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    enable_queue=True,  # Still recommended
+    max_queue_size=50,
+    duplicate_timeout=2.0
+)
+```
+
+### 5. Logging Strategy
 
 **Development**:
 ```yaml
@@ -619,7 +707,7 @@ logging:
   log_file: "/var/log/text2speech.log"
 ```
 
-### 5. Voice Selection
+### 6. Voice Selection
 
 - **Test multiple voices** for your use case
 - **Consider accent** (American vs British)
@@ -654,6 +742,16 @@ performance:
   num_threads: 1
 ```
 
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    config_path="robot_config.yaml",
+    enable_queue=True,
+    max_queue_size=100,
+    duplicate_timeout=3.0
+)
+```
+
 ### Accessibility Tool
 
 ```yaml
@@ -669,6 +767,14 @@ tts:
 logging:
   verbose: true
   log_level: "INFO"
+```
+
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    config_path="accessibility_config.yaml",
+    enable_queue=True
+)
 ```
 
 ### Audiobook Narration
@@ -708,6 +814,16 @@ logging:
   log_file: "/var/log/kiosk_tts.log"
 ```
 
+```python
+tts = Text2Speech(
+    el_api_key="dummy_key",
+    config_path="kiosk_config.yaml",
+    enable_queue=True,
+    max_queue_size=30,
+    duplicate_timeout=5.0
+)
+```
+
 ---
 
 ## Troubleshooting Configuration
@@ -745,8 +861,8 @@ print("Speed:", config.kokoro_speed)
 
 # Test with TTS
 tts = Text2Speech(el_api_key="dummy_key", config=config)
-thread = tts.call_text2speech_async("Configuration test")
-thread.join()
+tts.speak("Configuration test", blocking=True)
+tts.shutdown()
 ```
 
 ---
