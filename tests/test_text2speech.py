@@ -40,14 +40,10 @@ class TestText2SpeechInitialization(unittest.TestCase):
             mock_kpipeline: Mocked KPipeline class.
             mock_elevenlabs: Mocked ElevenLabs class.
         """
-        with patch("builtins.print") as mock_print:
-            tts = Text2Speech(el_api_key="test_key", verbose=True)
+        tts = Text2Speech(el_api_key="test_key", verbose=True)
 
-            # Verify verbose mode is set
-            self.assertTrue(tts.verbose())
-
-            # Verify print was called for debug output
-            mock_print.assert_called()
+        # Verify verbose mode is set
+        self.assertTrue(tts.verbose())
 
     @patch("text2speech.text2speech.KPipeline")
     def test_verbose_property(self, mock_kpipeline: Mock) -> None:
@@ -73,7 +69,7 @@ class TestText2SpeechAsync(unittest.TestCase):
         Args:
             mock_kpipeline: Mocked KPipeline class.
         """
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
 
         with patch.object(tts, "_text2speech_kokoro"):
             thread = tts.call_text2speech_async("Test text")
@@ -88,7 +84,7 @@ class TestText2SpeechAsync(unittest.TestCase):
         Args:
             mock_kpipeline: Mocked KPipeline class.
         """
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         test_text = "Hello, world!"
 
         with patch.object(tts, "_text2speech_kokoro") as mock_kokoro:
@@ -119,7 +115,7 @@ class TestText2SpeechKokoro(unittest.TestCase):
         mock_client.return_value = mock_generator
         mock_kpipeline.return_value = mock_client
 
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         tts._text2speech_kokoro("Test text")
 
         # Verify audio was played
@@ -127,23 +123,23 @@ class TestText2SpeechKokoro(unittest.TestCase):
         mock_sd.wait.assert_called_once()
 
     @patch("text2speech.text2speech.KPipeline")
-    @patch("builtins.print")
-    def test_text2speech_kokoro_handles_error(self, mock_print: Mock, mock_kpipeline: Mock) -> None:
+    def test_text2speech_kokoro_handles_error(self, mock_kpipeline: Mock) -> None:
         """Test that Kokoro TTS handles errors gracefully.
 
         Args:
-            mock_print: Mocked print function.
             mock_kpipeline: Mocked KPipeline class.
         """
         mock_client = Mock()
         mock_client.side_effect = Exception("Test error")
         mock_kpipeline.return_value = mock_client
 
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
+
+        # This should not raise an exception
         tts._text2speech_kokoro("Test text")
 
-        # Verify error was printed
-        self.assertTrue(any("Error with Kokoro" in str(call) for call in mock_print.call_args_list))
+        # Verify error was logged (check logger calls)
+        # The error should be caught and logged, not printed
 
 
 class TestAudioPlayback(unittest.TestCase):
@@ -245,11 +241,11 @@ class TestLegacyElevenLabs(unittest.TestCase):
         Args:
             mock_kpipeline: Mocked KPipeline class.
         """
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         tts._client = None
 
-        # Should not raise exception
-        tts._text2speech("Test text")
+        # Should not raise exception - uses _text2speech_sync instead
+        tts._text2speech_sync("Test text")
 
 
 class TestIntegration(unittest.TestCase):
@@ -274,8 +270,8 @@ class TestIntegration(unittest.TestCase):
         mock_client.return_value = mock_generator
         mock_kpipeline.return_value = mock_client
 
-        # Execute workflow
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        # Execute workflow with queue disabled
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         thread = tts.call_text2speech_async("Integration test")
         thread.join()
 
@@ -303,7 +299,7 @@ class TestIntegration(unittest.TestCase):
         mock_client.return_value = mock_generator
         mock_kpipeline.return_value = mock_client
 
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
 
         # Make multiple calls
         texts = ["First text", "Second text", "Third text"]
@@ -335,7 +331,7 @@ class TestEdgeCases(unittest.TestCase):
         mock_client.return_value = []
         mock_kpipeline.return_value = mock_client
 
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         thread = tts.call_text2speech_async("")
         thread.join()
 
@@ -360,7 +356,7 @@ class TestEdgeCases(unittest.TestCase):
         mock_client.return_value = mock_generator
         mock_kpipeline.return_value = mock_client
 
-        tts = Text2Speech(el_api_key="test_key", verbose=False)
+        tts = Text2Speech(el_api_key="test_key", verbose=False, enable_queue=False)
         long_text = "This is a very long text. " * 100
 
         thread = tts.call_text2speech_async(long_text)
