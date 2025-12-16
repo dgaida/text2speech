@@ -67,3 +67,16 @@ extend-exclude = '''
 [tool.ruff]
 line-length = 127
 target-version = "py38"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+# Exclude examples directory from test collection
+norecursedirs = ["examples", ".git", ".tox", "dist", "build", "*.egg"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+]
