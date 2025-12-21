@@ -280,43 +280,7 @@ python main.py --interactive
 
 ## Testing
 
-### Run All Tests
-
-```bash
-pytest
-```
-
-### Run Tests with Coverage
-
-```bash
-pytest --cov=text2speech --cov-report=term --cov-report=html
-```
-
-### Run Specific Test Classes
-
-```bash
-# Test initialization
-pytest tests/test_text2speech.py::TestText2SpeechInitialization
-
-# Test audio queue
-pytest tests/test_audio_queue.py::TestAudioQueueManager
-
-# Test configuration
-pytest tests/test_config.py::TestConfigDefaults
-```
-
-### Test Coverage
-
-The test suite includes:
-- ✅ Initialization tests
-- ✅ Asynchronous operation tests
-- ✅ Audio queue management tests
-- ✅ Configuration system tests
-- ✅ Audio generation and playback tests
-- ✅ Command-line interface tests
-- ✅ Error handling tests
-- ✅ Edge case tests
-- ✅ Integration tests
+See [TESTING.md](docs/TESTING.md).
 
 ---
 
@@ -429,63 +393,7 @@ The project includes GitHub Actions workflows for:
 
 ## Troubleshooting
 
-### No Audio Output
-
-If you don't hear any audio:
-
-1. Check your default audio device:
-```python
-import sounddevice as sd
-print(sd.query_devices())
-```
-
-2. Verify sounddevice can play audio:
-```python
-import sounddevice as sd
-import numpy as np
-sd.play(np.random.randn(24000), samplerate=24000)
-sd.wait()
-```
-
-3. Set specific device in config:
-```yaml
-audio:
-  output_device: 2  # Replace with your device ID
-```
-
-### ALSA/PortAudio Errors
-
-If you see "device busy" errors:
-
-```python
-# Use the queue system (enabled by default)
-tts = Text2Speech(el_api_key="dummy_key", enable_queue=True)
-```
-
-The queue manager serializes audio playback to prevent conflicts.
-
-### Import Errors
-
-If you encounter import errors:
-
-```bash
-# Reinstall dependencies
-pip install --force-reinstall -r requirements.txt
-
-# Verify installation
-python -c "import kokoro; import torch; import sounddevice"
-```
-
-### Performance Issues
-
-For slow performance:
-
-1. Ensure PyTorch is using GPU acceleration (if available)
-2. Enable GPU in config:
-```yaml
-performance:
-  use_gpu: true
-```
+See [troubleshooting.md](docs/troubleshooting.md).
 
 ---
 
