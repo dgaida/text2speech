@@ -31,12 +31,14 @@ class TestKokoroEngine(unittest.TestCase):
 class TestElevenLabsEngine(unittest.TestCase):
     """Test cases for ElevenLabsEngine."""
 
+    @patch("text2speech.engines.elevenlabs.HAS_ELEVENLABS", True)
     @patch("text2speech.engines.elevenlabs.ElevenLabs")
     def test_init(self, mock_el: Mock) -> None:
         """Test ElevenLabsEngine initialization."""
         engine = ElevenLabsEngine(api_key="sk_test_key")
         mock_el.assert_called_once_with(api_key="sk_test_key")
 
+    @patch("text2speech.engines.elevenlabs.HAS_ELEVENLABS", True)
     @patch("text2speech.engines.elevenlabs.torchaudio.load")
     @patch("text2speech.engines.elevenlabs.ElevenLabs")
     def test_synthesize(self, mock_el: Mock, mock_load: Mock) -> None:
