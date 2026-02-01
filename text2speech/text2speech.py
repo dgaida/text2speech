@@ -6,10 +6,10 @@ import warnings
 from typing import Optional, List, Dict, Any
 
 import torch
-import torchaudio
+import torchaudio  # type: ignore[import-untyped]
 
 try:
-    import sounddevice as sd
+    import sounddevice as sd  # type: ignore[import-untyped]
 
     HAS_SOUNDDEVICE = True
 except (ImportError, OSError):

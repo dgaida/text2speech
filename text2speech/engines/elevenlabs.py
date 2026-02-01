@@ -1,9 +1,9 @@
 """ElevenLabs TTS engine implementation."""
 
 import io
-from typing import Iterator, Tuple, Optional
+from typing import Iterator, Tuple, Optional, Any, cast
 import torch
-import torchaudio
+import torchaudio  # type: ignore[import-untyped]
 
 try:
     from elevenlabs.client import ElevenLabs
@@ -11,7 +11,7 @@ try:
     HAS_ELEVENLABS = True
 except ImportError:
     HAS_ELEVENLABS = False
-    ElevenLabs = None
+    ElevenLabs = Any  # type: ignore[assignment, misc]
 
 
 class ElevenLabsEngine:
@@ -74,7 +74,7 @@ class ElevenLabsEngine:
             # Convert to mono if multi-channel
             if waveform.shape[0] > 1:
                 waveform = torch.mean(waveform, dim=0, keepdim=True)
-            return waveform.squeeze(0)
+            return cast(torch.Tensor, waveform.squeeze(0))
         except Exception as e:
             # If torchaudio fails (e.g. missing codec), this will raise
             raise RuntimeError(f"Failed to decode ElevenLabs audio: {e}")
