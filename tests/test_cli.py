@@ -24,6 +24,7 @@ class TestCLIArgumentParsing(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify Text2Speech was initialized
@@ -43,6 +44,7 @@ class TestCLIArgumentParsing(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify voice was set
@@ -62,6 +64,7 @@ class TestCLIArgumentParsing(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify Text2Speech was initialized with config path
@@ -78,6 +81,7 @@ class TestCLIArgumentParsing(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify all settings
@@ -100,6 +104,7 @@ class TestCLIExecution(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
     @patch("text2speech.cli.Text2Speech")
@@ -113,6 +118,7 @@ class TestCLIExecution(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify set_voice was not called
@@ -130,6 +136,7 @@ class TestCLIErrorHandling(unittest.TestCase):
             with patch("sys.stderr", new_callable=StringIO):
                 with self.assertRaises(SystemExit):
                     from text2speech.cli import main
+
                     main()
 
     @patch("text2speech.cli.Text2Speech")
@@ -142,6 +149,7 @@ class TestCLIErrorHandling(unittest.TestCase):
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(Exception):
                 from text2speech.cli import main
+
                 main()
 
     @patch("text2speech.cli.Text2Speech")
@@ -156,6 +164,7 @@ class TestCLIErrorHandling(unittest.TestCase):
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(Exception):
                 from text2speech.cli import main
+
                 main()
 
 
@@ -173,13 +182,13 @@ class TestCLIIntegration(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify complete call chain
         mock_tts_class.assert_called_once()
         mock_tts.set_voice.assert_called_once()
         mock_tts.speak.assert_called_once()
-
 
     @patch("text2speech.cli.Text2Speech")
     def test_long_text_message(self, mock_tts_class):
@@ -193,6 +202,7 @@ class TestCLIIntegration(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Verify long text was passed
@@ -210,6 +220,7 @@ class TestCLIIntegration(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         mock_tts.speak.assert_called_once_with(special_text, blocking=True)
@@ -226,6 +237,7 @@ class TestCLIIntegration(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         mock_tts.speak.assert_called_once_with(unicode_text, blocking=True)
@@ -245,6 +257,7 @@ class TestCLIEdgeCases(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         # Should still call TTS even with empty string
@@ -261,6 +274,7 @@ class TestCLIEdgeCases(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         mock_tts.speak.assert_called_once_with("   ", blocking=True)
@@ -277,6 +291,7 @@ class TestCLIEdgeCases(unittest.TestCase):
 
         with patch.object(sys, "argv", test_args):
             from text2speech.cli import main
+
             main()
 
         mock_tts.speak.assert_called_once_with(multiline_text, blocking=True)

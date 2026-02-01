@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 import torch
 from text2speech.engines import KokoroEngine, ElevenLabsEngine
 
+
 class TestKokoroEngine(unittest.TestCase):
     """Test cases for KokoroEngine."""
 
@@ -27,6 +28,7 @@ class TestKokoroEngine(unittest.TestCase):
         self.assertEqual(results[0][0], "gs")
         self.assertEqual(results[0][1], "ps")
         self.assertIsInstance(results[0][2], torch.Tensor)
+
 
 class TestElevenLabsEngine(unittest.TestCase):
     """Test cases for ElevenLabsEngine."""

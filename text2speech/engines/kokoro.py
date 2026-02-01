@@ -5,10 +5,12 @@ import torch
 
 try:
     from kokoro import KPipeline
+
     HAS_KOKORO = True
 except ImportError:
     HAS_KOKORO = False
     KPipeline = None
+
 
 class KokoroEngine:
     """TTS engine using the Kokoro model."""
@@ -31,10 +33,7 @@ class KokoroEngine:
             raise RuntimeError(f"Failed to initialize Kokoro pipeline: {e}")
 
     def synthesize(
-        self,
-        text: str,
-        voice: Optional[str] = None,
-        speed: float = 1.0
+        self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
         """
         Synthesize speech using Kokoro.

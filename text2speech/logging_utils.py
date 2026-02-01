@@ -3,11 +3,12 @@
 import logging
 import re
 
+
 class SensitiveDataFilter(logging.Filter):
     """Redact sensitive data from logs."""
 
     PATTERNS = [
-        (r'sk_[a-zA-Z0-9]{20,}', 'sk_***REDACTED***'),
+        (r"sk_[a-zA-Z0-9]{20,}", "sk_***REDACTED***"),
         (r'"api_key":\s*"[^"]+', '"api_key": "***"'),
     ]
 

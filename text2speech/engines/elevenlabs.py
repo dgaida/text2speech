@@ -7,10 +7,12 @@ import torchaudio
 
 try:
     from elevenlabs.client import ElevenLabs
+
     HAS_ELEVENLABS = True
 except ImportError:
     HAS_ELEVENLABS = False
     ElevenLabs = None
+
 
 class ElevenLabsEngine:
     """TTS engine using ElevenLabs API."""
@@ -32,10 +34,7 @@ class ElevenLabsEngine:
         self.model = model
 
     def synthesize(
-        self,
-        text: str,
-        voice: Optional[str] = None,
-        speed: float = 1.0
+        self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
         """
         Synthesize speech using ElevenLabs.
@@ -48,11 +47,7 @@ class ElevenLabsEngine:
         Yields:
             Tuples of (graphemes, phonemes, audio_tensor).
         """
-        audio_generator = self.client.generate(
-            text=text,
-            voice=voice or "Brian",
-            model=self.model
-        )
+        audio_generator = self.client.generate(text=text, voice=voice or "Brian", model=self.model)
 
         if isinstance(audio_generator, bytes):
             audio_tensor = self._bytes_to_tensor(audio_generator)

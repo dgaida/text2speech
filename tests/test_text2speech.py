@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import Mock, patch
 from text2speech import Text2Speech
 
+
 class TestText2Speech(unittest.TestCase):
     """Test cases for Text2Speech class."""
 
@@ -26,7 +27,7 @@ class TestText2Speech(unittest.TestCase):
     def test_speak_sync(self, mock_kokoro: Mock) -> None:
         """Test synchronous speak call."""
         tts = Text2Speech(enable_queue=False)
-        with patch.object(tts, 'speak_sync') as mock_speak_sync:
+        with patch.object(tts, "speak_sync") as mock_speak_sync:
             tts.speak("Hello", blocking=True)
             mock_speak_sync.assert_called_once_with("Hello")
 

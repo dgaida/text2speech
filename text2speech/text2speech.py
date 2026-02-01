@@ -10,6 +10,7 @@ import torchaudio
 
 try:
     import sounddevice as sd
+
     HAS_SOUNDDEVICE = True
 except (ImportError, OSError):
     HAS_SOUNDDEVICE = False
@@ -144,7 +145,7 @@ class Text2Speech:
         if self._use_elevenlabs:
             try:
                 model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
-                self._engine = ElevenLabsEngine(api_key=self._el_api_key, model=model) # type: ignore
+                self._engine = ElevenLabsEngine(api_key=self._el_api_key, model=model)  # type: ignore
                 self.logger.info("Initialized ElevenLabs TTS")
                 return
             except Exception as e:
@@ -185,6 +186,7 @@ class Text2Speech:
     def _wait_for_queue(self) -> None:
         """Wait for the audio queue to be empty."""
         import time
+
         if self._audio_queue:
             while not self._audio_queue._queue.empty():
                 time.sleep(0.1)
@@ -202,7 +204,11 @@ class Text2Speech:
             return
 
         try:
-            voice = self.config.kokoro_voice if isinstance(self._engine, KokoroEngine) else self.config.get("tts.elevenlabs.voice", "Brian")
+            voice = (
+                self.config.kokoro_voice
+                if isinstance(self._engine, KokoroEngine)
+                else self.config.get("tts.elevenlabs.voice", "Brian")
+            )
             speed = self.config.kokoro_speed
 
             self.logger.debug(f"Synthesizing: {text[:50]}...")
@@ -214,7 +220,12 @@ class Text2Speech:
             self.logger.error(f"Speech synthesis error: {e}")
 
     @staticmethod
-    def _play_audio_safely(audio_tensor: torch.Tensor, original_sample_rate: int = 24000, device: Optional[int] = None, volume: float = DEFAULT_VOLUME) -> None:
+    def _play_audio_safely(
+        audio_tensor: torch.Tensor,
+        original_sample_rate: int = 24000,
+        device: Optional[int] = None,
+        volume: float = DEFAULT_VOLUME,
+    ) -> None:
         """Play audio safely with resampling and volume control."""
         if not HAS_SOUNDDEVICE or sd is None:
             logging.getLogger("text2speech").warning("sounddevice not available, skipping playback")

@@ -3,6 +3,7 @@
 import argparse
 from .text2speech import Text2Speech
 
+
 def main() -> None:
     """Command-line interface for text2speech."""
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Convert text to speech")
@@ -18,6 +19,7 @@ def main() -> None:
 
     # Using the new speak API (blocking)
     tts.speak(args.text, blocking=True)
+
 
 if __name__ == "__main__":
     main()

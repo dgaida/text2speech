@@ -5,6 +5,7 @@ from unittest.mock import patch
 from hypothesis import given, strategies as st
 from text2speech import Text2Speech
 
+
 class TestText2SpeechProperties(unittest.TestCase):
     """Property-based tests for Text2Speech."""
 
@@ -14,7 +15,7 @@ class TestText2SpeechProperties(unittest.TestCase):
         # Use a real Config but mock the engine and queue
         with patch("text2speech.text2speech.KokoroEngine"):
             tts = Text2Speech(enable_queue=False)
-            with patch.object(tts, 'speak_sync'):
+            with patch.object(tts, "speak_sync"):
                 # Should not raise exception
                 result = tts.speak(text, blocking=False)
                 self.assertIsInstance(result, bool)
@@ -24,6 +25,6 @@ class TestText2SpeechProperties(unittest.TestCase):
         """Test that speak() handles various priority levels."""
         with patch("text2speech.text2speech.KokoroEngine"):
             tts = Text2Speech(enable_queue=True)
-            with patch.object(tts._audio_queue, 'enqueue', return_value=True) as mock_enqueue:
+            with patch.object(tts._audio_queue, "enqueue", return_value=True) as mock_enqueue:
                 tts.speak("test", priority=priority)
                 mock_enqueue.assert_called_with("test", priority=priority)

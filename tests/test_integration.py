@@ -6,6 +6,7 @@ import torch
 from unittest.mock import patch
 from text2speech import Text2Speech
 
+
 @pytest.mark.integration
 class TestText2SpeechIntegration(unittest.TestCase):
     """Integration tests for Text2Speech."""

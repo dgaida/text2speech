@@ -9,6 +9,7 @@ import time
 from text2speech.audio_queue import AudioTask, AudioQueueManager
 from text2speech.text2speech import Text2Speech
 
+
 class TestAudioTask(unittest.TestCase):
     """Test cases for AudioTask dataclass."""
 
@@ -24,6 +25,7 @@ class TestAudioTask(unittest.TestCase):
         task_low = AudioTask(text="Low", priority=1)
         task_high = AudioTask(text="High", priority=10)
         self.assertTrue(task_high < task_low)
+
 
 class TestAudioPlayback(unittest.TestCase):
     """Test cases for audio playback safety."""
@@ -42,6 +44,7 @@ class TestAudioPlayback(unittest.TestCase):
         args, kwargs = mock_sd.play.call_args
         self.assertIsInstance(args[0], np.ndarray)
         self.assertEqual(kwargs["samplerate"], 24000)
+
 
 class TestAudioQueueManager(unittest.TestCase):
     """Test cases for AudioQueueManager."""

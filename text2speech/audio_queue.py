@@ -84,10 +84,7 @@ class AudioQueueManager:
         self._shutdown_event: threading.Event = threading.Event()
 
         # Recent messages tracking (for duplicate detection) using TTL cache
-        self._recent_messages: TTLCache[str, float] = TTLCache(
-            maxsize=MAX_RECENT_MESSAGES,
-            ttl=duplicate_timeout
-        )
+        self._recent_messages: TTLCache[str, float] = TTLCache(maxsize=MAX_RECENT_MESSAGES, ttl=duplicate_timeout)
         self._recent_lock: threading.Lock = threading.Lock()
 
         # Statistics
