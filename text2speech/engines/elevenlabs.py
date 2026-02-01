@@ -47,7 +47,8 @@ class ElevenLabsEngine:
         Yields:
             Tuples of (graphemes, phonemes, audio_tensor).
         """
-        audio_generator = self.client.generate(text=text, voice=voice or "Brian", model=self.model)
+        client: Any = self.client
+        audio_generator = client.generate(text=text, voice=voice or "Brian", model=self.model)
 
         if isinstance(audio_generator, bytes):
             audio_tensor = self._bytes_to_tensor(audio_generator)
