@@ -9,8 +9,12 @@ import threading
 import queue
 import logging
 import time
-from typing import Optional, Callable
+from typing import Optional, Callable, Dict
 from dataclasses import dataclass
+from types import MappingProxyType
+from cachetools import TTLCache
+
+from .constants import MAX_RECENT_MESSAGES
 
 
 @dataclass
@@ -19,19 +23,22 @@ class AudioTask:
 
     text: str
     priority: int = 0  # Higher = more urgent
-    timestamp: float = None
+    timestamp: Optional[float] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Initialize timestamp if not provided."""
         if self.timestamp is None:
             self.timestamp = time.time()
 
-    def __lt__(self, other):
+    def __lt__(self, other: "AudioTask") -> bool:
         """Compare tasks by priority (for PriorityQueue)."""
         # Inverted priority (higher priority value = processed first)
         if self.priority != other.priority:
             return self.priority > other.priority
         # If same priority, older message first
-        return self.timestamp < other.timestamp
+        if self.timestamp is not None and other.timestamp is not None:
+            return self.timestamp < other.timestamp
+        return False
 
 
 class AudioQueueManager:
@@ -44,23 +51,6 @@ class AudioQueueManager:
     - Automatic cleanup on shutdown
     - Skip duplicate messages within timeout
     - Non-blocking queueing
-
-    Example:
-        from text2speech.audio_queue import AudioQueueManager
-
-        def my_tts_function(text):
-            # Your TTS code here
-            pass
-
-        manager = AudioQueueManager(my_tts_function)
-        manager.start()
-
-        # Queue audio (non-blocking)
-        manager.enqueue("Hello world", priority=5)
-        manager.enqueue("High priority!", priority=10)
-
-        # Cleanup when done
-        manager.shutdown()
     """
 
     def __init__(
@@ -69,7 +59,7 @@ class AudioQueueManager:
         max_queue_size: int = 50,
         duplicate_timeout: float = 2.0,
         logger: Optional[logging.Logger] = None,
-    ):
+    ) -> None:
         """
         Initialize the audio queue manager.
 
@@ -79,35 +69,38 @@ class AudioQueueManager:
             duplicate_timeout: Skip duplicate messages within this window (seconds)
             logger: Optional logger instance (creates one if None)
         """
-        self._tts_callable = tts_callable
-        self._max_queue_size = max_queue_size
-        self._duplicate_timeout = duplicate_timeout
+        self._tts_callable: Callable[[str], None] = tts_callable
+        self._max_queue_size: int = max_queue_size
+        self._duplicate_timeout: float = duplicate_timeout
 
         # Logging
-        self._logger = logger or logging.getLogger(__name__)
+        self._logger: logging.Logger = logger or logging.getLogger(__name__)
 
         # Priority queue (uses __lt__ from AudioTask for ordering)
-        self._queue = queue.PriorityQueue(maxsize=max_queue_size)
+        self._queue: queue.PriorityQueue[AudioTask] = queue.PriorityQueue(maxsize=max_queue_size)
 
         # Worker thread
         self._worker_thread: Optional[threading.Thread] = None
-        self._shutdown_event = threading.Event()
+        self._shutdown_event: threading.Event = threading.Event()
 
-        # Recent messages tracking (for duplicate detection)
-        self._recent_messages = {}  # {text: timestamp}
-        self._recent_lock = threading.Lock()
+        # Recent messages tracking (for duplicate detection) using TTL cache
+        self._recent_messages: TTLCache[str, float] = TTLCache(
+            maxsize=MAX_RECENT_MESSAGES,
+            ttl=duplicate_timeout
+        )
+        self._recent_lock: threading.Lock = threading.Lock()
 
         # Statistics
-        self._stats = {
+        self._stats: Dict[str, int] = {
             "messages_queued": 0,
             "messages_played": 0,
             "messages_skipped_duplicate": 0,
             "messages_skipped_full": 0,
             "errors": 0,
         }
-        self._stats_lock = threading.Lock()
+        self._stats_lock: threading.Lock = threading.Lock()
 
-    def start(self):
+    def start(self) -> None:
         """Start the worker thread."""
         if self._worker_thread is not None and self._worker_thread.is_alive():
             self._logger.warning("Worker thread already running")
@@ -118,7 +111,7 @@ class AudioQueueManager:
         self._worker_thread.start()
         self._logger.debug("Audio queue manager started")
 
-    def shutdown(self, timeout: float = 5.0):
+    def shutdown(self, timeout: float = 5.0) -> None:
         """
         Stop the worker thread and wait for completion.
 
@@ -192,7 +185,7 @@ class AudioQueueManager:
             self._logger.warning(f"Queue full, skipped: {text[:50]}")
             return False
 
-    def clear_queue(self):
+    def clear_queue(self) -> None:
         """Clear all pending messages from queue."""
         cleared = 0
         try:
@@ -205,10 +198,10 @@ class AudioQueueManager:
         if cleared > 0:
             self._logger.info(f"Cleared {cleared} messages from queue")
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> MappingProxyType[str, int]:
         """Get playback statistics."""
         with self._stats_lock:
-            return self._stats.copy()
+            return MappingProxyType(self._stats.copy())
 
     def is_running(self) -> bool:
         """Check if worker thread is active."""
@@ -216,7 +209,7 @@ class AudioQueueManager:
 
     # Private methods
 
-    def _worker_loop(self):
+    def _worker_loop(self) -> None:
         """Worker thread main loop."""
         self._logger.debug("Worker thread started")
 
@@ -246,7 +239,7 @@ class AudioQueueManager:
 
         self._logger.debug("Worker thread exiting")
 
-    def _play_audio(self, text: str):
+    def _play_audio(self, text: str) -> None:
         """
         Play audio using TTS callable.
 
@@ -272,26 +265,16 @@ class AudioQueueManager:
     def _is_duplicate(self, text: str) -> bool:
         """Check if message is a recent duplicate."""
         with self._recent_lock:
-            if text in self._recent_messages:
-                last_time = self._recent_messages[text]
-                if time.time() - last_time < self._duplicate_timeout:
-                    return True
-        return False
+            # TTL cache handles expiration automatically
+            return text in self._recent_messages
 
-    def _track_message(self, text: str):
+    def _track_message(self, text: str) -> None:
         """Track message to detect duplicates."""
         with self._recent_lock:
-            current_time = time.time()
+            # TTL cache handles size and expiration automatically
+            self._recent_messages[text] = time.time()
 
-            # Add/update message
-            self._recent_messages[text] = current_time
-
-            # Cleanup old messages (keep dict small)
-            if len(self._recent_messages) > 100:
-                cutoff_time = current_time - self._duplicate_timeout
-                self._recent_messages = {msg: ts for msg, ts in self._recent_messages.items() if ts > cutoff_time}
-
-    def _log_statistics(self):
+    def _log_statistics(self) -> None:
         """Log playback statistics."""
         stats = self.get_stats()
         self._logger.info(
