@@ -3,7 +3,6 @@
 import unittest
 from unittest.mock import Mock, patch
 from text2speech import Text2Speech
-from text2speech.engines import KokoroEngine, ElevenLabsEngine
 
 class TestText2Speech(unittest.TestCase):
     """Test cases for Text2Speech class."""
@@ -16,7 +15,7 @@ class TestText2Speech(unittest.TestCase):
 
     def test_init_with_elevenlabs(self) -> None:
         """Test initialization with ElevenLabs API key."""
-        with patch("text2speech.text2speech.ElevenLabsEngine") as mock_el_class:
+        with patch("text2speech.text2speech.ElevenLabsEngine"):
             # Configure mock instance to have the right class name if needed,
             # but is_using_elevenlabs now checks for "ElevenLabsEngine" in the string representation.
             # MagicMock instances usually show up as <MagicMock name='ElevenLabsEngine()' id='...'>

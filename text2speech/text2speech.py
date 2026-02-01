@@ -11,7 +11,7 @@ import torchaudio
 try:
     import sounddevice as sd
     HAS_SOUNDDEVICE = True
-except (ImportError, OSError) as e:
+except (ImportError, OSError):
     HAS_SOUNDDEVICE = False
     sd = None
 
@@ -23,11 +23,9 @@ from .constants import (
     API_KEY_PREFIX,
     DEFAULT_QUEUE_SIZE,
     DEFAULT_DUPLICATE_TIMEOUT,
-    KOKORO_SAMPLE_RATE,
     DEFAULT_VOLUME,
 )
 from .exceptions import (
-    Text2SpeechError,
     TTSEngineNotAvailable,
     AudioDeviceError,
 )

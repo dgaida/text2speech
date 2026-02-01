@@ -7,7 +7,6 @@ including argument parsing, Text2Speech integration, and error handling.
 import unittest
 from unittest.mock import Mock, patch
 import sys
-import argparse
 from io import StringIO
 
 

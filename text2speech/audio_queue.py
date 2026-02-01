@@ -9,7 +9,7 @@ import threading
 import queue
 import logging
 import time
-from typing import Optional, Callable, Dict, Any, Union
+from typing import Optional, Callable, Dict
 from dataclasses import dataclass
 from types import MappingProxyType
 from cachetools import TTLCache

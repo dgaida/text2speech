@@ -11,7 +11,7 @@ class TestKokoroEngine(unittest.TestCase):
     @patch("text2speech.engines.kokoro.KPipeline")
     def test_init(self, mock_kpipeline: Mock) -> None:
         """Test KokoroEngine initialization."""
-        engine = KokoroEngine(lang_code="a")
+        KokoroEngine(lang_code="a")
         mock_kpipeline.assert_called_once_with(lang_code="a")
 
     @patch("text2speech.engines.kokoro.KPipeline")
@@ -35,7 +35,7 @@ class TestElevenLabsEngine(unittest.TestCase):
     @patch("text2speech.engines.elevenlabs.ElevenLabs")
     def test_init(self, mock_el: Mock) -> None:
         """Test ElevenLabsEngine initialization."""
-        engine = ElevenLabsEngine(api_key="sk_test_key")
+        ElevenLabsEngine(api_key="sk_test_key")
         mock_el.assert_called_once_with(api_key="sk_test_key")
 
     @patch("text2speech.engines.elevenlabs.HAS_ELEVENLABS", True)

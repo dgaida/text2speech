@@ -3,7 +3,7 @@
 import unittest
 import pytest
 import torch
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from text2speech import Text2Speech
 
 @pytest.mark.integration
