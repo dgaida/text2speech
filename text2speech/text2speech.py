@@ -1,55 +1,44 @@
 """Text-to-speech module with configurable settings."""
 
-from typing import Optional
 import logging
+import threading
+import warnings
+from typing import Optional, List, Dict, Any
 
-try:
-    from elevenlabs import play
-    from elevenlabs.client import ElevenLabs
-
-    HAS_ELEVENLABS = True
-except ImportError as e:
-    print("Warning: elevenlabs not available:", e)
-    HAS_ELEVENLABS = False
-    ElevenLabs = None
-
-try:
-    from kokoro import KPipeline
-
-    HAS_KOKORO = True
-except ImportError as e:
-    print(f"Warning: kokoro not available ({e}). TTS will not work.")
-    HAS_KOKORO = False
-    KPipeline = None
-
-import torchaudio
 import torch
+import torchaudio
 
 try:
     import sounddevice as sd
-
     HAS_SOUNDDEVICE = True
 except (ImportError, OSError) as e:
-    print(f"Warning: sounddevice not available ({e}). Audio playback will not work.")
     HAS_SOUNDDEVICE = False
     sd = None
 
-import threading
-
 from .config import Config
 from .audio_queue import AudioQueueManager
+from .engines import TTSEngine, KokoroEngine, ElevenLabsEngine
+from .constants import (
+    MIN_API_KEY_LENGTH,
+    API_KEY_PREFIX,
+    DEFAULT_QUEUE_SIZE,
+    DEFAULT_DUPLICATE_TIMEOUT,
+    KOKORO_SAMPLE_RATE,
+    DEFAULT_VOLUME,
+)
+from .exceptions import (
+    Text2SpeechError,
+    TTSEngineNotAvailable,
+    AudioDeviceError,
+)
+from .logging_utils import SensitiveDataFilter
 
 
 class Text2Speech:
     """Text-to-Speech (TTS) class with configurable settings.
 
     This class provides text-to-speech functionality using either ElevenLabs
-    (when a valid API key is provided) or Kokoro model (as fallback) with
-    configuration support via YAML files. Supports asynchronous speech synthesis
-    and safe audio playback with dynamic resampling.
-
-    Features thread-safe audio playback via AudioQueueManager to prevent
-    ALSA/PortAudio device conflicts.
+    or Kokoro model with configuration support via YAML files.
     """
 
     def __init__(
@@ -58,19 +47,19 @@ class Text2Speech:
         verbose: Optional[bool] = None,
         config_path: Optional[str] = None,
         config: Optional[Config] = None,
-        enable_queue: bool = True,  # NEW: Enable audio queue by default
-        max_queue_size: int = 50,
-        duplicate_timeout: float = 2.0,
+        enable_queue: bool = True,
+        max_queue_size: int = DEFAULT_QUEUE_SIZE,
+        duplicate_timeout: float = DEFAULT_DUPLICATE_TIMEOUT,
     ) -> None:
         """Initialize the Text2Speech instance.
 
         Args:
-            el_api_key (str, optional): API key for ElevenLabs. If valid, ElevenLabs will be used.
-            verbose (bool, optional): If True, prints debug info. Overrides config if set.
-            config_path (str, optional): Path to config.yaml file.
-            config (Config, optional): Pre-loaded Config object. Takes precedence over config_path.
+            el_api_key: API key for ElevenLabs.
+            verbose: If True, prints debug info. Overrides config if set.
+            config_path: Path to config.yaml file.
+            config: Pre-loaded Config object.
             enable_queue: If True, uses AudioQueueManager for thread-safe playback.
-            max_queue_size: Maximum queued messages (only if enable_queue=True).
+            max_queue_size: Maximum queued messages.
             duplicate_timeout: Skip duplicate messages within this window (seconds).
         """
         # Load configuration
@@ -80,10 +69,7 @@ class Text2Speech:
             self.config = Config(config_path)
 
         # Override verbose setting if explicitly provided
-        if verbose is not None:
-            self._verbose = verbose
-        else:
-            self._verbose = self.config.verbose
+        self._verbose = verbose if verbose is not None else self.config.verbose
 
         # Setup logging
         self._setup_logging()
@@ -92,12 +78,53 @@ class Text2Speech:
         self._el_api_key = el_api_key
         self._use_elevenlabs = self._validate_elevenlabs_key(el_api_key)
 
-        # Initialize TTS client
-        self._client = None
-        self._el_client = None
+        # Initialize TTS engine
+        self._engine: Optional[TTSEngine] = None
         self._initialize_tts_engine()
 
         # Set audio output device from config
+        self._setup_audio_device()
+
+        # Initialize audio queue manager
+        self._enable_queue = enable_queue
+        self._audio_queue: Optional[AudioQueueManager] = None
+
+        if enable_queue:
+            self._audio_queue = AudioQueueManager(
+                tts_callable=self.speak_sync,
+                max_queue_size=max_queue_size,
+                duplicate_timeout=duplicate_timeout,
+                logger=self.logger,
+            )
+            self._audio_queue.start()
+            self.logger.info("Audio queue manager enabled")
+
+    def _setup_logging(self) -> None:
+        """Setup logging configuration with sensitive data filter."""
+        log_level = self.config.get("logging.log_level", "INFO")
+        self.logger = logging.getLogger("text2speech")
+        self.logger.setLevel(getattr(logging, log_level))
+
+        if not self.logger.handlers:
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            self.logger.addHandler(console_handler)
+
+        # Add sensitive data filter to all handlers
+        sensitive_filter = SensitiveDataFilter()
+        for handler in self.logger.handlers:
+            handler.addFilter(sensitive_filter)
+
+        log_file = self.config.get("logging.log_file")
+        if log_file:
+            file_handler = logging.FileHandler(log_file)
+            file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+            file_handler.addFilter(sensitive_filter)
+            self.logger.addHandler(file_handler)
+
+    def _setup_audio_device(self) -> None:
+        """Configure the audio output device."""
         if HAS_SOUNDDEVICE and sd is not None:
             device_id = self.config.audio_output_device
             if device_id is not None:
@@ -106,289 +133,98 @@ class Text2Speech:
                     self.logger.info(f"Audio output device set to: {device_id}")
                 except Exception as e:
                     self.logger.error(f"Failed to set audio device {device_id}: {e}")
-
-        # ✅ NEW: Initialize audio queue manager
-        self._enable_queue = enable_queue
-        self._audio_queue = None
-
-        if enable_queue:
-            self._audio_queue = AudioQueueManager(
-                tts_callable=self._text2speech_sync,  # Synchronous TTS function
-                max_queue_size=max_queue_size,
-                duplicate_timeout=duplicate_timeout,
-                logger=self.logger,
-            )
-            self._audio_queue.start()
-            self.logger.info("Audio queue manager enabled")
-        else:
-            self.logger.info("Audio queue manager disabled (using legacy threading)")
-
-    def __del__(self):
-        """Cleanup on deletion."""
-        self.shutdown()
-
-    def shutdown(self, timeout: float = 5.0):
-        """
-        Shutdown the TTS system cleanly.
-
-        Args:
-            timeout: Maximum seconds to wait for queue to empty
-        """
-        if self._audio_queue is not None:
-            self._audio_queue.shutdown(timeout=timeout)
+                    raise AudioDeviceError(f"Invalid audio device: {device_id}") from e
 
     def _validate_elevenlabs_key(self, api_key: Optional[str]) -> bool:
-        """Validate ElevenLabs API key format.
-
-        Args:
-            api_key (str, optional): The API key to validate.
-
-        Returns:
-            bool: True if the key appears valid, False otherwise.
-        """
-        if api_key is None:
+        """Validate ElevenLabs API key format."""
+        if not api_key or not isinstance(api_key, str):
             return False
-
-        if not isinstance(api_key, str):
-            return False
-
-        # ElevenLabs API keys typically start with "sk_" and have a minimum length
-        # They're usually around 32-64 characters long
-        if api_key.startswith("sk_") and len(api_key) >= 10:
-            return True
-
-        # Some legacy keys might not start with sk_ but are still valid
-        # If it's a reasonably long string, we'll try to use it
-        if len(api_key) >= 32:
-            self.logger.warning("API key format unusual but will attempt to use it")
-            return True
-
-        return False
-
-    def _setup_logging(self) -> None:
-        """Setup logging configuration."""
-        log_level = self.config.get("logging.log_level", "INFO")
-
-        # Create logger
-        self.logger = logging.getLogger("text2speech")
-        self.logger.setLevel(getattr(logging, log_level))
-
-        # Formatter
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-        # Console handler - only add if no handlers exist
-        if not self.logger.handlers:
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(getattr(logging, log_level))
-            console_handler.setFormatter(formatter)
-            self.logger.addHandler(console_handler)
-
-        # File handler if specified - always add if configured
-        log_file = self.config.get("logging.log_file")
-        if log_file:
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setLevel(getattr(logging, log_level))
-            file_handler.setFormatter(formatter)
-            self.logger.addHandler(file_handler)
+        return api_key.startswith(API_KEY_PREFIX) and len(api_key) >= MIN_API_KEY_LENGTH
 
     def _initialize_tts_engine(self) -> None:
-        """Initialize the TTS engine based on configuration and API key."""
-
-        # If valid ElevenLabs API key provided, use ElevenLabs
-        if self._use_elevenlabs and HAS_ELEVENLABS:
+        """Initialize the TTS engine with fallback."""
+        if self._use_elevenlabs:
             try:
-                self._el_client = ElevenLabs(api_key=self._el_api_key)
+                model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
+                self._engine = ElevenLabsEngine(api_key=self._el_api_key, model=model) # type: ignore
                 self.logger.info("Initialized ElevenLabs TTS")
-                # Also initialize Kokoro as fallback
-                if HAS_KOKORO:
-                    self._client = KPipeline(lang_code=self.config.kokoro_lang_code)
-                    self.logger.info("Kokoro TTS initialized as fallback")
                 return
             except Exception as e:
-                self.logger.error(f"Failed to initialize ElevenLabs: {e}")
-                self.logger.info("Falling back to Kokoro TTS")
-                self._use_elevenlabs = False
-                self._el_client = None
+                self.logger.warning(f"ElevenLabs initialization failed: {e}. Falling back to Kokoro.")
 
-        # Otherwise use Kokoro (default)
-        engine = self.config.tts_engine
-
-        if engine == "kokoro" or not self._use_elevenlabs:
-            if HAS_KOKORO:
-                lang_code = self.config.kokoro_lang_code
-                self._client = KPipeline(lang_code=lang_code)
-                self.logger.info(f"Initialized Kokoro TTS with lang_code: {lang_code}")
-            else:
-                self.logger.error("Kokoro not available - TTS functionality disabled")
-                self._client = None
-
-        elif engine == "elevenlabs":
-            if not self._use_elevenlabs:
-                self.logger.warning("ElevenLabs requested but no valid API key provided")
-                # Fall back to Kokoro
-                if HAS_KOKORO:
-                    self._client = KPipeline(lang_code=self.config.kokoro_lang_code)
-                    self.logger.info("Falling back to Kokoro TTS")
-        else:
-            self.logger.error(f"Unknown TTS engine: {engine}")
-            self._client = None
+        try:
+            self._engine = KokoroEngine(lang_code=self.config.kokoro_lang_code)
+            self.logger.info("Initialized Kokoro TTS")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize any TTS engine: {e}")
+            raise TTSEngineNotAvailable("No TTS engine available") from e
 
     def speak(self, text: str, priority: int = 0, blocking: bool = False) -> bool:
-        """
-        Queue text for speech synthesis (NEW unified API).
+        """Queue text for speech synthesis.
 
         Args:
-            text: Text to speak
-            priority: Priority level (0-100, higher = more urgent)
-            blocking: If True, wait for speech to complete
+            text: Text to speak.
+            priority: Priority level (0-100).
+            blocking: If True, wait for speech to complete.
 
         Returns:
-            True if successfully queued/spoken, False otherwise
+            True if successfully queued/spoken.
         """
-        if self._enable_queue:
-            # Use queue manager (non-blocking by default)
+        if self._audio_queue and self._enable_queue:
             success = self._audio_queue.enqueue(text, priority=priority)
-
-            # If blocking requested, wait for queue to empty
             if blocking and success:
-                # Wait for this message to be processed
-                # (simplified - doesn't track specific message)
-                import time
-
-                time.sleep(0.1)
-                while self._audio_queue._queue.qsize() > 0:
-                    time.sleep(0.1)
-
+                self._wait_for_queue()
             return success
-        else:
-            # Legacy behavior: spawn thread
-            if blocking:
-                self._text2speech_sync(text)
-                return True
-            else:
-                thread = threading.Thread(target=self._text2speech_sync, args=(text,))
-                thread.start()
-                return True
 
-    def call_text2speech_async(self, text: str) -> threading.Thread:
-        """Call text-to-speech asynchronously using the configured TTS engine.
+        if blocking:
+            self.speak_sync(text)
+            return True
 
-        Args:
-            text (str): The text to be spoken.
-
-        Returns:
-            threading.Thread: The thread handling the asynchronous TTS operation.
-        """
-        # Use ElevenLabs if available and initialized
-        if self._use_elevenlabs and self._el_client is not None:
-            thread = threading.Thread(target=self._text2speech_elevenlabs, args=(text,))
-        else:
-            thread = threading.Thread(target=self._text2speech_kokoro, args=(text,))
-
+        thread = threading.Thread(target=self.speak_sync, args=(text,))
         thread.start()
-        return thread
+        return True
 
-    def call_text2speech(self, text: str):
-        """
-        Synchronous TTS call (blocks until complete).
+    def _wait_for_queue(self) -> None:
+        """Wait for the audio queue to be empty."""
+        import time
+        if self._audio_queue:
+            while not self._audio_queue._queue.empty():
+                time.sleep(0.1)
+            # Wait a bit more for the last message to finish playing
+            time.sleep(0.5)
 
-        Args:
-            text: Text to speak
-        """
-        self._text2speech_sync(text)
-
-    def _text2speech_sync(self, text: str) -> None:
-        """
-        Synchronous TTS execution (blocks until complete).
-
-        This is the actual TTS function that gets called by the queue manager.
+    def speak_sync(self, text: str) -> None:
+        """Synchronous TTS call.
 
         Args:
-            text: Text to synthesize
+            text: Text to speak.
         """
-        # Use ElevenLabs if available and initialized
-        if self._use_elevenlabs and self._el_client is not None:
-            self._text2speech_elevenlabs(text)
-        else:
-            self._text2speech_kokoro(text)
-
-    def _text2speech_elevenlabs(self, mytext: str) -> None:
-        """Perform TTS using ElevenLabs API.
-
-        Args:
-            mytext (str): The text to be synthesized and played.
-        """
-        if self._el_client is None:
-            self.logger.error("ElevenLabs client not initialized")
+        if not self._engine:
+            self.logger.error("No TTS engine initialized")
             return
 
         try:
-            voice = self.config.get("tts.elevenlabs.voice", "Brian")
-            model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
-
-            self.logger.debug(f"Generating speech with ElevenLabs: voice={voice}, model={model}")
-
-            audio = self._el_client.generate(
-                text=mytext,
-                voice=voice,
-                model=model,
-            )
-            play(audio)
-        except Exception as e:
-            self.logger.error(f"Error with ElevenLabs: {e}")
-            # Fallback to Kokoro if available
-            if self._client is not None:
-                self.logger.info("Falling back to Kokoro for this request")
-                self._text2speech_kokoro(mytext)
-
-    def _text2speech_kokoro(self, mytext: str) -> None:
-        """Perform TTS using the Kokoro model with configured settings.
-
-        Args:
-            mytext (str): Text to convert to speech.
-        """
-        if self._client is None:
-            self.logger.error("TTS client not initialized")
-            return
-
-        try:
-            voice = self.config.kokoro_voice
+            voice = self.config.kokoro_voice if isinstance(self._engine, KokoroEngine) else self.config.get("tts.elevenlabs.voice", "Brian")
             speed = self.config.kokoro_speed
-            split_pattern = self.config.kokoro_split_pattern
 
-            self.logger.debug(f"Generating speech with Kokoro: voice={voice}, speed={speed}")
-
-            generator = self._client(mytext, voice=voice, speed=speed, split_pattern=split_pattern)
-
-            for _, _, audio in generator:
-                Text2Speech._play_audio_safely(
-                    audio, original_sample_rate=self.config.sample_rate, volume=self.config.audio_volume
-                )
+            self.logger.debug(f"Synthesizing: {text[:50]}...")
+            for _, _, audio in self._engine.synthesize(text, voice=voice, speed=speed):
+                self._play_audio_safely(audio, original_sample_rate=self.config.sample_rate, volume=self.config.audio_volume)
                 if HAS_SOUNDDEVICE and sd:
                     sd.wait()
-
         except Exception as e:
-            self.logger.error(f"Error with Kokoro: {e}")
+            self.logger.error(f"Speech synthesis error: {e}")
 
     @staticmethod
-    def _play_audio_safely(
-        audio_tensor: torch.Tensor, original_sample_rate: int = 24000, device: Optional[int] = None, volume: float = 0.8
-    ) -> None:
-        """Play audio safely by checking supported sample rate and adjusting volume.
-
-        Args:
-            audio_tensor (torch.Tensor): The 1D audio waveform tensor.
-            original_sample_rate (int, optional): Original sample rate of the audio. Defaults to 24000.
-            device (Optional[int], optional): Output device index. Defaults to system default.
-            volume (float, optional): Playback volume multiplier (0.0–1.0). Defaults to 0.8.
-        """
+    def _play_audio_safely(audio_tensor: torch.Tensor, original_sample_rate: int = 24000, device: Optional[int] = None, volume: float = DEFAULT_VOLUME) -> None:
+        """Play audio safely with resampling and volume control."""
         if not HAS_SOUNDDEVICE or sd is None:
-            print("⚠️ sounddevice not available, skipping audio playback")
+            logging.getLogger("text2speech").warning("sounddevice not available, skipping playback")
             return
 
         try:
             if device is None:
-                device = sd.default.device[1]  # Default output device
+                device = sd.default.device[1]
 
             device_info = sd.query_devices(device, "output")
             supported_rate = int(device_info["default_samplerate"])
@@ -397,42 +233,44 @@ class Text2Speech:
                 resampler = torchaudio.transforms.Resample(orig_freq=original_sample_rate, new_freq=supported_rate)
                 audio_tensor = resampler(audio_tensor)
 
-            # Normalize and scale volume
             peak = torch.abs(audio_tensor).max()
             if peak > 0:
                 audio_tensor = audio_tensor / peak
             audio_tensor = torch.clamp(audio_tensor * volume, -0.95, 0.95)
 
-            # Convert to numpy and play
-            audio_np = audio_tensor.cpu().numpy()
-            sd.play(audio_np, samplerate=supported_rate, device=device)
-
+            sd.play(audio_tensor.cpu().numpy(), samplerate=supported_rate, device=device)
         except Exception as e:
-            print(f"❌ Error during safe audio playback: {e}")
+            logging.getLogger("text2speech").error(f"Audio playback error: {e}")
 
-    def verbose(self) -> bool:
-        """Check whether verbose mode is enabled.
+    # Deprecated methods
+    def call_text2speech_async(self, text: str) -> threading.Thread:
+        """Deprecated: Use speak(blocking=False) instead."""
+        warnings.warn("call_text2speech_async is deprecated, use speak(blocking=False)", DeprecationWarning, stacklevel=2)
+        thread = threading.Thread(target=self.speak_sync, args=(text,))
+        thread.start()
+        return thread
 
-        Returns:
-            bool: True if verbose mode is active, otherwise False.
-        """
-        return self._verbose
+    def call_text2speech(self, text: str) -> None:
+        """Deprecated: Use speak(blocking=True) instead."""
+        warnings.warn("call_text2speech is deprecated, use speak(blocking=True)", DeprecationWarning, stacklevel=2)
+        self.speak_sync(text)
+
+    def shutdown(self, timeout: float = 5.0) -> None:
+        """Shutdown the TTS system."""
+        if self._audio_queue:
+            self._audio_queue.shutdown(timeout=timeout)
+
+    def __del__(self) -> None:
+        self.shutdown()
 
     def set_voice(self, voice: str) -> None:
-        """Set the voice for Kokoro TTS.
-
-        Args:
-            voice (str): Voice identifier (e.g., 'af_heart', 'am_adam').
-        """
+        """Set the voice for TTS."""
         self.config.set("tts.kokoro.voice", voice)
+        self.config.set("tts.elevenlabs.voice", voice)
         self.logger.info(f"Voice changed to: {voice}")
 
     def set_speed(self, speed: float) -> None:
-        """Set the speech speed for Kokoro TTS.
-
-        Args:
-            speed (float): Speech speed multiplier (0.5 to 2.0).
-        """
+        """Set the speech speed."""
         if 0.5 <= speed <= 2.0:
             self.config.set("tts.kokoro.speed", speed)
             self.logger.info(f"Speed changed to: {speed}")
@@ -440,37 +278,28 @@ class Text2Speech:
             self.logger.warning(f"Speed {speed} out of range (0.5-2.0)")
 
     def set_volume(self, volume: float) -> None:
-        """Set the default playback volume.
-
-        Args:
-            volume (float): Volume multiplier (0.0 to 1.0).
-        """
+        """Set the playback volume."""
         if 0.0 <= volume <= 1.0:
             self.config.set("audio.default_volume", volume)
             self.logger.info(f"Volume changed to: {volume}")
         else:
             self.logger.warning(f"Volume {volume} out of range (0.0-1.0)")
 
-    def get_available_devices(self) -> list:
-        """Get list of available audio output devices.
-
-        Returns:
-            list: List of audio device information.
-        """
+    def get_available_devices(self) -> List[Dict[str, Any]]:
+        """Get available audio devices."""
         if HAS_SOUNDDEVICE and sd:
-            return sd.query_devices()
+            return list(sd.query_devices())
         return []
 
     def is_using_elevenlabs(self) -> bool:
-        """Check if currently using ElevenLabs.
+        """Check if using ElevenLabs."""
+        if not self._engine:
+            return False
+        # Handle both real classes and mocks
+        return "ElevenLabsEngine" in str(self._engine) or "ElevenLabsEngine" in str(type(self._engine))
 
-        Returns:
-            bool: True if using ElevenLabs, False if using Kokoro.
-        """
-        return self._use_elevenlabs and self._el_client is not None
-
-    def get_queue_stats(self) -> dict:
-        """Get audio queue statistics (only if queue enabled)."""
-        if self._audio_queue is not None:
-            return self._audio_queue.get_stats()
+    def get_queue_stats(self) -> Dict[str, Any]:
+        """Get queue statistics."""
+        if self._audio_queue:
+            return dict(self._audio_queue.get_stats())
         return {}

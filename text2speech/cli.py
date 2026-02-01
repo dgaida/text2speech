@@ -1,17 +1,23 @@
-import argparse
+"""Command-line interface for text2speech."""
 
+import argparse
 from .text2speech import Text2Speech
 
-
-def main():
+def main() -> None:
     """Command-line interface for text2speech."""
-    parser = argparse.ArgumentParser()
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Convert text to speech")
     parser.add_argument("text", help="Text to speak")
-    parser.add_argument("--voice", help="Voice to use")
-    parser.add_argument("--config", help="Config file path")
-    args = parser.parse_args()
+    parser.add_argument("--voice", help="Voice identifier to use")
+    parser.add_argument("--config", help="Path to config.yaml file")
 
-    tts = Text2Speech(config_path=args.config)
+    args: argparse.Namespace = parser.parse_args()
+
+    tts: Text2Speech = Text2Speech(config_path=args.config)
     if args.voice:
         tts.set_voice(args.voice)
-    tts.call_text2speech_async(args.text).join()
+
+    # Using the new speak API (blocking)
+    tts.speak(args.text, blocking=True)
+
+if __name__ == "__main__":
+    main()
