@@ -4,7 +4,7 @@ from typing import Iterator, Tuple, Optional
 import torch
 
 try:
-    from kokoro import KPipeline
+    from kokoro import KPipeline  # type: ignore[import-untyped]
 
     HAS_KOKORO = True
 except ImportError:
