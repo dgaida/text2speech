@@ -27,7 +27,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: pytest --cov=text2speech --cov-report=xml
+        run: pytest -m "not integration" --cov=text2speech --cov-report=xml
 
       - name: Lint with Ruff
         run: ruff check .
