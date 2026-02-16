@@ -11,15 +11,15 @@ class TTSEngine(Protocol):
     def synthesize(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
-        """
-        Synthesize speech from text.
+        """Synthesize speech from text.
 
         Args:
-            text: Text to synthesize
-            voice: Voice identifier
-            speed: Speech speed multiplier
+            text (str): Text to synthesize.
+            voice (Optional[str]): Voice identifier.
+            speed (float): Speech speed multiplier.
 
         Yields:
-            Tuples of (graphemes, phonemes, audio_tensor)
+            Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
+                Tuples of (graphemes, phonemes, audio_tensor).
         """
         ...

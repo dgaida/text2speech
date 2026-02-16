@@ -11,6 +11,7 @@ from text2speech import Text2Speech
 class TestText2SpeechIntegration(unittest.TestCase):
     """Integration tests for Text2Speech."""
 
+    @patch("text2speech.text2speech.HAS_SOUNDDEVICE", True)
     @patch("text2speech.text2speech.sd")
     @patch("text2speech.engines.kokoro.KPipeline")
     def test_complete_kokoro_flow(self, mock_kpipeline, mock_sd):

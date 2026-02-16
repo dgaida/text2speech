@@ -13,7 +13,14 @@ class SensitiveDataFilter(logging.Filter):
     ]
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """Filter log records to redact sensitive information."""
+        """Filter log records to redact sensitive information.
+
+        Args:
+            record (logging.LogRecord): The log record to filter.
+
+        Returns:
+            bool: Always True, as it modifies the record in-place.
+        """
         if not isinstance(record.msg, str):
             return True
 

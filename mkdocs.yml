@@ -1,0 +1,86 @@
+site_name: text2speech
+site_description: Professionelle Text-to-Speech-Bibliothek mit Unterstützung für Kokoro und ElevenLabs.
+site_author: Daniel Gaida
+repo_url: https://github.com/dgaida/text2speech
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: de
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+
+extra:
+  version:
+    method: mike
+
+plugins:
+  - search
+  - i18n:
+      default_language: de
+      languages:
+        - locale: de
+          name: Deutsch
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.append(".")
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: true
+  - mermaid2:
+      arguments:
+        theme: light
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+  - Usage:
+      - Basic Usage: usage/basic.md
+      - Advanced Usage: usage/advanced.md
+  - API Reference:
+      - Core API: api/core.md
+      - Engines: api/engines.md
+      - Utilities: api/utils.md
+  - Architecture: architecture/index.md
+  - Development:
+      - Contributing: development/contributing.md
+      - Style Guide: development/style-guide.md
+  - Troubleshooting: troubleshooting.md
+  - Changelog: changelog.md
+  - Metrics: metrics.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - toc:
+      permalink: true

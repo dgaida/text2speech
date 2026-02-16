@@ -47,6 +47,15 @@ test = [
     "pytest-timeout>=2.1.0,<3.0.0",
     "hypothesis>=6.0.0",
 ]
+docs = [
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.20.0",
+    "mkdocs-mermaid2-plugin>=0.1.0",
+    "mkdocs-static-i18n>=1.0.0",
+    "mike>=2.0.0",
+    "git-cliff>=2.0.0",
+    "interrogate>=1.5.0",
+]
 
 [project.scripts]
 text2speech = "text2speech.cli:main"
@@ -103,3 +112,22 @@ addopts = [
 markers = [
     "integration: marks tests as integration tests",
 ]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = false
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = false
+fail-under = 95
+exclude = ["setup.py", "docs", "build", "tests"]
+ignore-regex = ["^get$", "^mock_.*", ".*Base$"]
+# verbose: 0=minimal, 1=short, 2=detailed
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false

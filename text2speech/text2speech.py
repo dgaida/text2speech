@@ -53,13 +53,13 @@ class Text2Speech:
         """Initialize the Text2Speech instance.
 
         Args:
-            el_api_key: API key for ElevenLabs.
-            verbose: If True, prints debug info. Overrides config if set.
-            config_path: Path to config.yaml file.
-            config: Pre-loaded Config object.
-            enable_queue: If True, uses AudioQueueManager for thread-safe playback.
-            max_queue_size: Maximum queued messages.
-            duplicate_timeout: Skip duplicate messages within this window (seconds).
+            el_api_key (Optional[str]): API key for ElevenLabs.
+            verbose (Optional[bool]): If True, prints debug info. Overrides config if set.
+            config_path (Optional[str]): Path to config.yaml file.
+            config (Optional[Config]): Pre-loaded Config object.
+            enable_queue (bool): If True, uses AudioQueueManager for thread-safe playback.
+            max_queue_size (int): Maximum queued messages.
+            duplicate_timeout (float): Skip duplicate messages within this window (seconds).
         """
         # Load configuration
         if config is not None:
@@ -162,12 +162,12 @@ class Text2Speech:
         """Queue text for speech synthesis.
 
         Args:
-            text: Text to speak.
-            priority: Priority level (0-100).
-            blocking: If True, wait for speech to complete.
+            text (str): Text to speak.
+            priority (int): Priority level (0-100).
+            blocking (bool): If True, wait for speech to complete.
 
         Returns:
-            True if successfully queued/spoken.
+            bool: True if successfully queued/spoken.
         """
         if self._audio_queue and self._enable_queue:
             success = self._audio_queue.enqueue(text, priority=priority)
@@ -197,7 +197,7 @@ class Text2Speech:
         """Synchronous TTS call.
 
         Args:
-            text: Text to speak.
+            text (str): Text to speak.
         """
         if not self._engine:
             self.logger.error("No TTS engine initialized")
@@ -226,7 +226,14 @@ class Text2Speech:
         device: Optional[int] = None,
         volume: float = DEFAULT_VOLUME,
     ) -> None:
-        """Play audio safely with resampling and volume control."""
+        """Play audio safely with resampling and volume control.
+
+        Args:
+            audio_tensor (torch.Tensor): Audio data to play.
+            original_sample_rate (int): Sample rate of the audio data.
+            device (Optional[int]): Audio device ID to use.
+            volume (float): Playback volume (0.0 to 1.0).
+        """
         if not HAS_SOUNDDEVICE or sd is None:
             logging.getLogger("text2speech").warning("sounddevice not available, skipping playback")
             return
@@ -265,21 +272,34 @@ class Text2Speech:
         self.speak_sync(text)
 
     def shutdown(self, timeout: float = 5.0) -> None:
-        """Shutdown the TTS system."""
+        """Shutdown the TTS system.
+
+        Args:
+            timeout (float): Maximum seconds to wait for shutdown.
+        """
         if self._audio_queue:
             self._audio_queue.shutdown(timeout=timeout)
 
     def __del__(self) -> None:
+        """Destructor to ensure cleanup of resources."""
         self.shutdown()
 
     def set_voice(self, voice: str) -> None:
-        """Set the voice for TTS."""
+        """Set the voice for TTS.
+
+        Args:
+            voice (str): Name of the voice to use.
+        """
         self.config.set("tts.kokoro.voice", voice)
         self.config.set("tts.elevenlabs.voice", voice)
         self.logger.info(f"Voice changed to: {voice}")
 
     def set_speed(self, speed: float) -> None:
-        """Set the speech speed."""
+        """Set the speech speed.
+
+        Args:
+            speed (float): Speech speed (0.5 to 2.0).
+        """
         if 0.5 <= speed <= 2.0:
             self.config.set("tts.kokoro.speed", speed)
             self.logger.info(f"Speed changed to: {speed}")
@@ -287,7 +307,11 @@ class Text2Speech:
             self.logger.warning(f"Speed {speed} out of range (0.5-2.0)")
 
     def set_volume(self, volume: float) -> None:
-        """Set the playback volume."""
+        """Set the playback volume.
+
+        Args:
+            volume (float): Playback volume (0.0 to 1.0).
+        """
         if 0.0 <= volume <= 1.0:
             self.config.set("audio.default_volume", volume)
             self.logger.info(f"Volume changed to: {volume}")
@@ -295,7 +319,11 @@ class Text2Speech:
             self.logger.warning(f"Volume {volume} out of range (0.0-1.0)")
 
     def get_available_devices(self) -> List[Dict[str, Any]]:
-        """Get available audio devices."""
+        """Get available audio devices.
+
+        Returns:
+            List[Dict[str, Any]]: List of available audio devices.
+        """
         if HAS_SOUNDDEVICE and sd:
             return list(sd.query_devices())
         return []
@@ -308,7 +336,11 @@ class Text2Speech:
         return "ElevenLabsEngine" in str(self._engine) or "ElevenLabsEngine" in str(type(self._engine))
 
     def get_queue_stats(self) -> Dict[str, Any]:
-        """Get queue statistics."""
+        """Get queue statistics.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing queue statistics.
+        """
         if self._audio_queue:
             return dict(self._audio_queue.get_stats())
         return {}

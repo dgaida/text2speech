@@ -42,15 +42,14 @@ class AudioTask:
 
 
 class AudioQueueManager:
-    """
-    Thread-safe audio queue manager that serializes TTS playback.
+    """Thread-safe audio queue manager that serializes TTS playback.
 
     Features:
-    - Single worker thread for sequential audio playback
-    - Priority queue for urgent messages
-    - Automatic cleanup on shutdown
-    - Skip duplicate messages within timeout
-    - Non-blocking queueing
+        - Single worker thread for sequential audio playback
+        - Priority queue for urgent messages
+        - Automatic cleanup on shutdown
+        - Skip duplicate messages within timeout
+        - Non-blocking queueing
     """
 
     def __init__(
@@ -60,14 +59,13 @@ class AudioQueueManager:
         duplicate_timeout: float = 2.0,
         logger: Optional[logging.Logger] = None,
     ) -> None:
-        """
-        Initialize the audio queue manager.
+        """Initialize the audio queue manager.
 
         Args:
-            tts_callable: Synchronous function that performs TTS (blocks until done)
-            max_queue_size: Maximum queued messages (older discarded if full)
-            duplicate_timeout: Skip duplicate messages within this window (seconds)
-            logger: Optional logger instance (creates one if None)
+            tts_callable: Synchronous function that performs TTS (blocks until done).
+            max_queue_size: Maximum queued messages (older discarded if full).
+            duplicate_timeout: Skip duplicate messages within this window (seconds).
+            logger: Optional logger instance (creates one if None).
         """
         self._tts_callable: Callable[[str], None] = tts_callable
         self._max_queue_size: int = max_queue_size
@@ -109,11 +107,10 @@ class AudioQueueManager:
         self._logger.debug("Audio queue manager started")
 
     def shutdown(self, timeout: float = 5.0) -> None:
-        """
-        Stop the worker thread and wait for completion.
+        """Stop the worker thread and wait for completion.
 
         Args:
-            timeout: Maximum seconds to wait for shutdown
+            timeout: Maximum seconds to wait for shutdown.
         """
         if self._worker_thread is None:
             return
@@ -139,15 +136,14 @@ class AudioQueueManager:
         self._log_statistics()
 
     def enqueue(self, text: str, priority: int = 0) -> bool:
-        """
-        Queue a message for audio playback (non-blocking).
+        """Queue a message for audio playback (non-blocking).
 
         Args:
-            text: Message to speak
-            priority: Priority (higher = more urgent, range 0-100)
+            text: Message to speak.
+            priority: Priority (higher = more urgent, range 0-100).
 
         Returns:
-            True if queued successfully, False if skipped/failed
+            bool: True if queued successfully, False if skipped/failed.
         """
         if not text or not text.strip():
             return False
@@ -237,11 +233,10 @@ class AudioQueueManager:
         self._logger.debug("Worker thread exiting")
 
     def _play_audio(self, text: str) -> None:
-        """
-        Play audio using TTS callable.
+        """Play audio using TTS callable.
 
         Args:
-            text: Message to speak
+            text: Message to speak.
         """
         try:
             self._logger.debug(f"Playing: {text[:50]}")

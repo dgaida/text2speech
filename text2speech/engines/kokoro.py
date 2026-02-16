@@ -16,14 +16,14 @@ class KokoroEngine:
     """TTS engine using the Kokoro model."""
 
     def __init__(self, lang_code: str = "a"):
-        """
-        Initialize Kokoro engine.
+        """Initialize Kokoro engine.
 
         Args:
-            lang_code: Language code for the pipeline.
+            lang_code (str): Language code for the pipeline.
 
         Raises:
             ImportError: If kokoro package is not installed.
+            RuntimeError: If pipeline initialization fails.
         """
         if not HAS_KOKORO or KPipeline is None:
             raise ImportError("kokoro package is not installed")
@@ -35,16 +35,16 @@ class KokoroEngine:
     def synthesize(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
-        """
-        Synthesize speech using Kokoro.
+        """Synthesize speech using Kokoro.
 
         Args:
-            text: Text to synthesize.
-            voice: Voice identifier.
-            speed: Speech speed multiplier.
+            text (str): Text to synthesize.
+            voice (Optional[str]): Voice identifier.
+            speed (float): Speech speed multiplier.
 
         Yields:
-            Tuples of (graphemes, phonemes, audio_tensor).
+            Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
+                Tuples of (graphemes, phonemes, audio_tensor).
         """
         # Kokoro pipeline returns a generator
         generator = self.pipeline(text, voice=voice, speed=speed)
