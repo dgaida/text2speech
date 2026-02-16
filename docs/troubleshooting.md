@@ -1,59 +1,48 @@
-# Troubleshooting
+# Fehlerbehebung
 
-## No Audio Output
+Hier finden Sie Lösungen für häufig auftretende Probleme.
 
-If you don't hear any audio:
+## Kein Audio-Ausgang
 
-1. Check your default audio device:
-```python
-import sounddevice as sd
-print(sd.query_devices())
-```
+Wenn Sie keine Sprachausgabe hören:
 
-2. Verify sounddevice can play audio:
-```python
-import sounddevice as sd
-import numpy as np
-sd.play(np.random.randn(24000), samplerate=24000)
-sd.wait()
-```
+1. **Geräte-Liste prüfen**:
+   Führen Sie folgendes aus, um zu sehen, ob Ihr Gerät erkannt wird:
+   ```bash
+   python -c "import sounddevice as sd; print(sd.query_devices())"
+   ```
+2. **Standardgerät testen**:
+   Stellen Sie sicher, dass Ihr Betriebssystem das richtige Standard-Ausgabegerät ausgewählt hat.
+3. **Konfiguration prüfen**:
+   Überprüfen Sie in Ihrer `config.yaml`, ob `audio.output_device` auf die korrekte ID eingestellt ist oder auf `null` steht.
+4. **Lautstärke**:
+   Prüfen Sie `audio.default_volume` und die Systemlautstärke.
 
-3. Set specific device in config:
-```yaml
-audio:
-  output_device: 2  # Replace with your device ID
-```
+## ALSA/PortAudio Fehler (Linux)
 
-## ALSA/PortAudio Errors
+Falls Fehler wie `ALSA lib pcm.c:8432:(snd_pcm_recover) underrun occurred` auftreten:
 
-If you see "device busy" errors:
+- Dies ist oft ein Zeichen für Ressourcenkonflikte. Stellen Sie sicher, dass Sie die `AudioQueueManager`-Funktionalität nutzen (standardmäßig aktiviert), die den Zugriff auf die Soundkarte serialisiert.
+- Installieren Sie die notwendigen Bibliotheken: `sudo apt-get install libasound2-dev libportaudio2`.
 
-```python
-# Use the queue system (enabled by default)
-tts = Text2Speech(el_api_key="dummy_key", enable_queue=True)
-```
+## Kokoro-Modell lädt nicht
 
-The queue manager serializes audio playback to prevent conflicts.
+- **Internetverbindung**: Beim ersten Start wird das Modell von Hugging Face heruntergeladen. Stellen Sie eine Internetverbindung sicher.
+- **Speicherplatz**: Stellen Sie sicher, dass genügend Festplattenplatz (~500MB) vorhanden ist.
+- **PyTorch**: Falls CUDA-Fehler auftreten, prüfen Sie Ihre PyTorch-Installation:
+  ```python
+  import torch
+  print(torch.cuda.is_available())
+  ```
+  Setzen Sie `performance.use_gpu: false` in der `config.yaml`, falls Sie keine kompatible GPU haben.
 
-## Import Errors
+## Langsame Sprachsynthese
 
-If you encounter import errors:
+- **GPU nutzen**: Stellen Sie sicher, dass `use_gpu: true` konfiguriert ist und eine NVIDIA-GPU mit installierten Treibern vorhanden ist.
+- **CPU-Threads**: Erhöhen Sie ggf. die Anzahl der Threads in der Konfiguration unter `performance.num_threads`.
 
-```bash
-# Reinstall dependencies
-pip install --force-reinstall -r requirements.txt
+## ElevenLabs Authentifizierungsfehler
 
-# Verify installation
-python -c "import kokoro; import torch; import sounddevice"
-```
-
-## Performance Issues
-
-For slow performance:
-
-1. Ensure PyTorch is using GPU acceleration (if available)
-2. Enable GPU in config:
-```yaml
-performance:
-  use_gpu: true
-```
+- Stellen Sie sicher, dass Ihr API-Key mit `sk_` beginnt.
+- Prüfen Sie Ihr Kontoguthaben bei ElevenLabs.
+- ElevenLabs wird nur verwendet, wenn ein gültiger API-Key übergeben wurde und das Engine-Feld auf `elevenlabs` steht.

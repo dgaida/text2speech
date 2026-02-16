@@ -54,7 +54,7 @@ class Config:
         """Initialize configuration.
 
         Args:
-            config_path: Path to config.yaml file. If None, searches in common locations.
+            config_path (Optional[str]): Path to config.yaml file. If None, searches in common locations.
         """
         self._config: Dict[str, Any] = self.DEFAULT_CONFIG.copy()
 
@@ -88,7 +88,7 @@ class Config:
         """Load configuration from YAML file.
 
         Args:
-            config_path: Path to the YAML configuration file.
+            config_path (str): Path to the YAML configuration file.
 
         Raises:
             FileNotFoundError: If config file doesn't exist.
@@ -111,11 +111,11 @@ class Config:
         """Deep merge two dictionaries.
 
         Args:
-            base: Base dictionary.
-            update: Dictionary with updates to apply.
+            base (Dict[str, Any]): Base dictionary.
+            update (Dict[str, Any]): Dictionary with updates to apply.
 
         Returns:
-            Merged dictionary.
+            Dict[str, Any]: Merged dictionary.
         """
         result: Dict[str, Any] = base.copy()
 
@@ -131,11 +131,11 @@ class Config:
         """Get configuration value using dot notation.
 
         Args:
-            key_path: Dot-separated path to config value (e.g., 'audio.output_device').
-            default: Default value if key not found.
+            key_path (str): Dot-separated path to config value (e.g., 'audio.output_device').
+            default (Any): Default value if key not found.
 
         Returns:
-            Configuration value or default.
+            Any: Configuration value or default.
         """
         keys: List[str] = key_path.split(".")
         value: Any = self._config
@@ -152,8 +152,8 @@ class Config:
         """Set configuration value using dot notation.
 
         Args:
-            key_path: Dot-separated path to config value (e.g., 'audio.output_device').
-            value: Value to set.
+            key_path (str): Dot-separated path to config value (e.g., 'audio.output_device').
+            value (Any): Value to set.
         """
         keys: List[str] = key_path.split(".")
         config: Dict[str, Any] = self._config
@@ -177,7 +177,7 @@ class Config:
         """Save current configuration to YAML file.
 
         Args:
-            config_path: Path where to save the configuration.
+            config_path (str): Path where to save the configuration.
 
         Raises:
             ValueError: If path is outside allowed directories.

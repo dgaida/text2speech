@@ -18,12 +18,11 @@ class ElevenLabsEngine:
     """TTS engine using ElevenLabs API."""
 
     def __init__(self, api_key: str, model: str = "eleven_multilingual_v2"):
-        """
-        Initialize ElevenLabs engine.
+        """Initialize ElevenLabs engine.
 
         Args:
-            api_key: ElevenLabs API key.
-            model: Model identifier.
+            api_key (str): ElevenLabs API key.
+            model (str): Model identifier.
 
         Raises:
             ImportError: If elevenlabs package is not installed.
@@ -36,16 +35,16 @@ class ElevenLabsEngine:
     def synthesize(
         self, text: str, voice: Optional[str] = None, speed: float = 1.0
     ) -> Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
-        """
-        Synthesize speech using ElevenLabs.
+        """Synthesize speech using ElevenLabs.
 
         Args:
-            text: Text to synthesize.
-            voice: Voice identifier.
-            speed: Speech speed multiplier (currently ignored for ElevenLabs).
+            text (str): Text to synthesize.
+            voice (Optional[str]): Voice identifier.
+            speed (float): Speech speed multiplier (currently ignored for ElevenLabs).
 
         Yields:
-            Tuples of (graphemes, phonemes, audio_tensor).
+            Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
+                Tuples of (graphemes, phonemes, audio_tensor).
         """
         client: Any = self.client
         audio_generator = client.generate(text=text, voice=voice or "Brian", model=self.model)
@@ -60,14 +59,13 @@ class ElevenLabsEngine:
             yield None, None, audio_tensor
 
     def _bytes_to_tensor(self, audio_bytes: bytes) -> torch.Tensor:
-        """
-        Convert audio bytes to torch Tensor.
+        """Convert audio bytes to torch Tensor.
 
         Args:
-            audio_bytes: Raw audio data (typically MP3).
+            audio_bytes (bytes): Raw audio data (typically MP3).
 
         Returns:
-            1D torch Tensor of audio waveform.
+            torch.Tensor: 1D torch Tensor of audio waveform.
         """
         buffer = io.BytesIO(audio_bytes)
         try:

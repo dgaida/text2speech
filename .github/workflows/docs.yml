@@ -1,0 +1,51 @@
+name: docs
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+          pip install mkdocs-material mkdocstrings[python] mkdocs-mermaid2-plugin mkdocs-static-i18n mike git-cliff interrogate
+
+      - name: Run Tests
+        run: python -m pytest --cov=text2speech --cov-report=term
+
+      - name: Check API doc coverage
+        run: interrogate text2speech/
+
+      - name: Generate Changelog
+        run: git-cliff -o CHANGELOG.md
+
+      - name: Build and deploy versioned docs
+        run: |
+          # Get version from pyproject.toml
+          VERSION=$(grep -m 1 "version =" pyproject.toml | cut -d '"' -f 2)
+          mike deploy --push --update-aliases $VERSION latest
+          mike set-default latest --push
