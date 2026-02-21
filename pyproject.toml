@@ -64,9 +64,6 @@ text2speech = "text2speech.cli:main"
 Homepage = "https://github.com/dgaida/text2speech"
 Repository = "https://github.com/dgaida/text2speech"
 
-[tool.setuptools]
-packages = ["text2speech"]
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["text2speech*"]
