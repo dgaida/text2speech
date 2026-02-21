@@ -67,6 +67,10 @@ Repository = "https://github.com/dgaida/text2speech"
 [tool.setuptools]
 packages = ["text2speech"]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["text2speech*"]
+
 [tool.setuptools.package-data]
 text2speech = ["py.typed"]
 
