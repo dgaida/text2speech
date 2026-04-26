@@ -3,7 +3,7 @@
 import logging
 import threading
 import warnings
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 
 import torch
 import torchaudio  # type: ignore[import-untyped]
