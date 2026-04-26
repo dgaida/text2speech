@@ -1,17 +1,20 @@
 """ElevenLabs TTS engine implementation."""
 
 import io
-from typing import Iterator, Tuple, Optional, Any, cast
+from typing import Iterator, Tuple, Optional, Any, cast, TYPE_CHECKING
 import torch
 import torchaudio  # type: ignore[import-untyped]
 
-try:
+if TYPE_CHECKING:
     from elevenlabs.client import ElevenLabs
+
+try:
+    from elevenlabs.client import ElevenLabs as RealElevenLabs
 
     HAS_ELEVENLABS = True
 except ImportError:
     HAS_ELEVENLABS = False
-    ElevenLabs = Any  # type: ignore[assignment, misc]
+    RealElevenLabs = Any  # type: ignore[assignment, misc]
 
 
 class ElevenLabsEngine:
@@ -27,9 +30,9 @@ class ElevenLabsEngine:
         Raises:
             ImportError: If elevenlabs package is not installed.
         """
-        if not HAS_ELEVENLABS or ElevenLabs is None:
+        if not HAS_ELEVENLABS or RealElevenLabs is None:
             raise ImportError("elevenlabs package is not installed")
-        self.client = ElevenLabs(api_key=api_key)
+        self.client: "ElevenLabs" = RealElevenLabs(api_key=api_key)
         self.model = model
 
     def synthesize(
@@ -46,8 +49,7 @@ class ElevenLabsEngine:
             Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
                 Tuples of (graphemes, phonemes, audio_tensor).
         """
-        client: Any = self.client
-        audio_generator = client.generate(text=text, voice=voice or "Brian", model=self.model)
+        audio_generator = self.client.generate(text=text, voice=voice or "Brian", model=self.model)
 
         if isinstance(audio_generator, bytes):
             audio_tensor = self._bytes_to_tensor(audio_generator)

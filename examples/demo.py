@@ -119,7 +119,7 @@ def run_all_examples(verbose: bool = False) -> None:
     print("=" * 60)
 
     # Initialize TTS (API key is not used anymore but required for compatibility)
-    tts = Text2Speech(el_api_key="dummy_key", verbose=verbose)
+    tts = Text2Speech(verbose=verbose)
 
     # Run examples
     example_simple_greeting(tts)
@@ -144,10 +144,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py                    # Run all examples
-  python main.py --verbose          # Run with verbose output
-  python main.py --example 1        # Run specific example
-  python main.py --interactive      # Run interactive mode only
+  python examples/demo.py                    # Run all examples
+  python examples/demo.py --verbose          # Run with verbose output
+  python examples/demo.py --example 1        # Run specific example
+  python examples/demo.py --interactive      # Run interactive mode only
         """,
     )
 
@@ -160,7 +160,7 @@ Examples:
     args = parser.parse_args()
 
     # Initialize TTS
-    tts = Text2Speech(el_api_key="dummy_key", verbose=args.verbose)
+    tts = Text2Speech(verbose=args.verbose)
 
     # Run specific example or all examples
     if args.interactive:

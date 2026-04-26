@@ -4,7 +4,7 @@ This guide will walk you through installing `text2speech` and its dependencies.
 
 ## System Requirements
 
-- **Python**: Version 3.9 or higher.
+- **Python**: Version 3.8 or higher.
 - **Operating Systems**: Ubuntu (tested), Windows, macOS.
 - **Audio**: A system with a working audio output device.
 - **Memory**: Minimum 2GB RAM recommended (4GB for optimal performance).
