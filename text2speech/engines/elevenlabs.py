@@ -49,7 +49,10 @@ class ElevenLabsEngine:
             Iterator[Tuple[Optional[str], Optional[str], torch.Tensor]]:
                 Tuples of (graphemes, phonemes, audio_tensor).
         """
-        audio_generator = self.client.generate(text=text, voice=voice or "Brian", model=self.model)
+        # We use Any here to avoid mypy errors when elevenlabs is not installed
+        # and to bypass the lack of type hints in some versions of the SDK.
+        client: Any = self.client
+        audio_generator = client.generate(text=text, voice=voice or "Brian", model=self.model)
 
         if isinstance(audio_generator, bytes):
             audio_tensor = self._bytes_to_tensor(audio_generator)
