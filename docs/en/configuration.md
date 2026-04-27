@@ -4,11 +4,11 @@
 
 ## Loading a Configuration File
 
-By default, the library searches for a `config.yaml` in the following locations:  
-1. Current directory  
-2. `~/.text2speech/config.yaml`  
-3. `~/.config/text2speech/config.yaml`  
-4. `/etc/text2speech/config.yaml`  
+By default, the library searches for a `config.yaml` in the following locations:
+1. Current directory
+2. `~/.text2speech/config.yaml`
+3. `~/.config/text2speech/config.yaml`
+4. `/etc/text2speech/config.yaml`
 
 You can also explicitly provide a path:
 
@@ -61,20 +61,22 @@ Enter the desired ID into the `config.yaml` under `audio.output_device`.
 
 ### Available Voices (Kokoro)
 
-**American English (`lang_code: "a"`):**  
-- `af_heart` - Female, warm (default)  
-- `af_nicole` - Female, professional  
-- `am_adam` - Male, deep  
-- `am_michael` - Male, friendly  
+**American English (`lang_code: "a"`):**
+- `af_heart` - Female, warm (default)
+- `af_nicole` - Female, professional
+- `am_adam` - Male, deep
+- `am_michael` - Male, friendly
 
-**British English (`lang_code: "b"`):**  
-- `bf_emma` - Female, elegant  
-- `bm_lewis` - Male, refined  
+**British English (`lang_code: "b"`):**
+- `bf_emma` - Female, elegant
+- `bf_isabella` - Female, sophisticated
+- `bm_lewis` - Male, refined
+- `bm_george` - Male, distinguished
 
 ## Configuration Priority
 
-Settings are applied in the following order of precedence (highest priority first):  
-1. Constructor arguments (e.g., `Text2Speech(verbose=True)`)  
-2. Explicit method calls (e.g., `tts.set_voice("am_adam")`)  
-3. Values from the loaded YAML file  
-4. Internal defaults  
+Settings are applied in the following order of precedence (highest priority first):
+1. Constructor arguments (e.g., `Text2Speech(verbose=True)`)
+2. Explicit method calls (e.g., `tts.set_voice("am_adam")`)
+3. Values from the loaded YAML file
+4. Internal defaults

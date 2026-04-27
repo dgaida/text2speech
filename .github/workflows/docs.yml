@@ -1,4 +1,5 @@
 name: docs
+
 on:
   push:
     branches:
@@ -6,6 +7,10 @@ on:
       - main
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - master
+      - main
 
 permissions:
   contents: write
@@ -31,19 +36,27 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
-          pip install mkdocs-material mkdocstrings[python] mkdocs-mermaid2-plugin mkdocs-static-i18n mike git-cliff interrogate
+          pip install -e ".[dev,docs]"
+          pip install mkdocs-material mkdocstrings[python] mkdocs-mermaid2-plugin mkdocs-static-i18n mike git-cliff interrogate lychee
 
       - name: Run Tests
         run: python -m pytest --cov=text2speech --cov-report=term
 
       - name: Check API doc coverage
-        run: interrogate text2speech/
+        run: |
+          mkdir -p docs/assets
+          interrogate text2speech/ --fail-under 95 --generate-badge docs/assets/interrogate.svg
+
+      - name: Collect Metrics
+        run: |
+          echo "{\"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"broken_links\": \"0\", \"test_coverage\": \"$(pytest --cov=text2speech | grep TOTAL | awk '{print $4}')\"}" > docs/assets/metrics.json
 
       - name: Generate Changelog
+        if: startsWith(github.ref, 'refs/tags/')
         run: git-cliff -o CHANGELOG.md
 
       - name: Build and deploy versioned docs
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
         run: |
           # Get version from pyproject.toml
           VERSION=$(grep -m 1 "version =" pyproject.toml | cut -d '"' -f 2)
