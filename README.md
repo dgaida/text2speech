@@ -49,7 +49,7 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/dgaida/text2speech.git
 cd text2speech
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### Optional Dependencies
@@ -57,7 +57,7 @@ pip install -r requirements.txt
 For development and testing:
 
 ```bash
-pip install pytest pytest-cov ruff black mypy bandit
+pip install -e ".[dev]"
 ```
 
 If you want optional support for ElevenLabs (legacy mode):
@@ -76,7 +76,7 @@ pip install elevenlabs
 from text2speech import Text2Speech
 
 # Initialize the TTS system (queue enabled by default)
-tts = Text2Speech(el_api_key="dummy_key", verbose=True)
+tts = Text2Speech(verbose=True)
 
 # Queue messages for playback (non-blocking)
 tts.speak("Hello, this is your robot speaking!")
@@ -94,7 +94,7 @@ tts.shutdown()
 ```python
 from text2speech import Text2Speech
 
-tts = Text2Speech(el_api_key="dummy_key")
+tts = Text2Speech()
 
 # Wait for speech to complete before continuing
 tts.speak("Please wait for this message.", blocking=True)
@@ -109,7 +109,7 @@ tts.shutdown()
 from text2speech import Text2Speech
 
 # Disable queue for legacy threading behavior
-tts = Text2Speech(el_api_key="dummy_key", enable_queue=False)
+tts = Text2Speech(enable_queue=False)
 
 # Generate and play speech asynchronously
 thread = tts.call_text2speech_async("Hello, world!")
@@ -183,7 +183,7 @@ text2speech "Hello" --config my_config.yaml
 ### Voice Selection
 
 ```python
-tts = Text2Speech(el_api_key="dummy_key")
+tts = Text2Speech()
 
 # Change voice at runtime
 tts.set_voice("am_adam")
@@ -215,7 +215,7 @@ The audio queue manager prevents ALSA/PortAudio device conflicts by serializing 
 ### Queue Statistics
 
 ```python
-tts = Text2Speech(el_api_key="dummy_key")
+tts = Text2Speech()
 
 # Queue several messages
 tts.speak("Message 1")
@@ -242,7 +242,7 @@ tts.shutdown()
 from text2speech import Text2Speech
 
 tts = Text2Speech(
-    el_api_key="dummy_key",
+    ,
     enable_queue=True,
     max_queue_size=100,  # Larger queue
     duplicate_timeout=5.0  # 5 second duplicate detection window
@@ -256,20 +256,20 @@ tts.shutdown()
 
 ## Running Examples
 
-The `main.py` file contains several example use cases:
+The `examples/demo.py` file contains several example use cases:
 
 ```bash
 # Run all examples
-python main.py
+python examples/demo.py
 
 # Run with verbose output
-python main.py --verbose
+python examples/demo.py --verbose
 
 # Run a specific example (1-5)
-python main.py --example 3
+python examples/demo.py --example 3
 
 # Run interactive mode
-python main.py --interactive
+python examples/demo.py --interactive
 ```
 
 ### Available Examples
@@ -317,12 +317,12 @@ Audio Playback
 from text2speech import Text2Speech
 
 # Robot voice
-robot_tts = Text2Speech(el_api_key="dummy_key")
+robot_tts = Text2Speech()
 robot_tts.set_voice("am_adam")
 robot_tts.set_speed(1.1)
 
 # Narrator voice
-narrator_tts = Text2Speech(el_api_key="dummy_key")
+narrator_tts = Text2Speech()
 narrator_tts.set_voice("bm_lewis")
 narrator_tts.set_speed(0.95)
 
@@ -338,7 +338,7 @@ narrator_tts.shutdown()
 ```python
 from text2speech import Text2Speech
 
-with Text2Speech(el_api_key="dummy_key") as tts:
+with Text2Speech() as tts:
     tts.speak("Automatic cleanup!")
     # Shutdown called automatically
 ```

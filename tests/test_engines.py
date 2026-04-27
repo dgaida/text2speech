@@ -34,7 +34,7 @@ class TestElevenLabsEngine(unittest.TestCase):
     """Test cases for ElevenLabsEngine."""
 
     @patch("text2speech.engines.elevenlabs.HAS_ELEVENLABS", True)
-    @patch("text2speech.engines.elevenlabs.ElevenLabs")
+    @patch("text2speech.engines.elevenlabs.RealElevenLabs")
     def test_init(self, mock_el: Mock) -> None:
         """Test ElevenLabsEngine initialization."""
         ElevenLabsEngine(api_key="sk_test_key")
@@ -42,7 +42,7 @@ class TestElevenLabsEngine(unittest.TestCase):
 
     @patch("text2speech.engines.elevenlabs.HAS_ELEVENLABS", True)
     @patch("text2speech.engines.elevenlabs.torchaudio.load")
-    @patch("text2speech.engines.elevenlabs.ElevenLabs")
+    @patch("text2speech.engines.elevenlabs.RealElevenLabs")
     def test_synthesize(self, mock_el: Mock, mock_load: Mock) -> None:
         """Test ElevenLabsEngine synthesis."""
         mock_client = mock_el.return_value

@@ -53,7 +53,8 @@ class Text2Speech:
         """Initialize the Text2Speech instance.
 
         Args:
-            el_api_key (Optional[str]): API key for ElevenLabs.
+            el_api_key (Optional[str]): API key for ElevenLabs. If not provided,
+                falls back to Kokoro unless explicitly configured otherwise.
             verbose (Optional[bool]): If True, prints debug info. Overrides config if set.
             config_path (Optional[str]): Path to config.yaml file.
             config (Optional[Config]): Pre-loaded Config object.
@@ -75,7 +76,13 @@ class Text2Speech:
 
         # Store API key and validate
         self._el_api_key = el_api_key
+        # Only use ElevenLabs if a key is provided and valid, OR if configured as the primary engine
+        # and the key is provided later. But for now, we tie _use_elevenlabs to key presence.
         self._use_elevenlabs = self._validate_elevenlabs_key(el_api_key)
+
+        # If user explicitly requested ElevenLabs in config but didn't provide a key, warn them
+        if self.config.tts_engine == "elevenlabs" and not self._use_elevenlabs:
+            self.logger.warning("ElevenLabs engine requested but no valid API key provided. Falling back to Kokoro.")
 
         # Initialize TTS engine
         self._engine: Optional[TTSEngine] = None
@@ -142,14 +149,18 @@ class Text2Speech:
 
     def _initialize_tts_engine(self) -> None:
         """Initialize the TTS engine with fallback."""
-        if self._use_elevenlabs:
-            try:
-                model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
-                self._engine = ElevenLabsEngine(api_key=self._el_api_key, model=model)  # type: ignore
-                self.logger.info("Initialized ElevenLabs TTS")
-                return
-            except Exception as e:
-                self.logger.warning(f"ElevenLabs initialization failed: {e}. Falling back to Kokoro.")
+        # Use ElevenLabs if configured OR if a key was provided
+        if self._use_elevenlabs or self.config.tts_engine == "elevenlabs":
+            if self._use_elevenlabs:
+                try:
+                    model = self.config.get("tts.elevenlabs.model", "eleven_multilingual_v2")
+                    self._engine = ElevenLabsEngine(api_key=self._el_api_key, model=model)  # type: ignore
+                    self.logger.info("Initialized ElevenLabs TTS")
+                    return
+                except Exception as e:
+                    self.logger.warning(f"ElevenLabs initialization failed: {e}. Falling back to Kokoro.")
+            else:
+                self.logger.warning("ElevenLabs configured but no valid key provided. Falling back to Kokoro.")
 
         try:
             self._engine = KokoroEngine(lang_code=self.config.kokoro_lang_code)
@@ -280,6 +291,14 @@ class Text2Speech:
         if self._audio_queue:
             self._audio_queue.shutdown(timeout=timeout)
 
+    def __enter__(self) -> "Text2Speech":
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Context manager exit."""
+        self.shutdown()
+
     def __del__(self) -> None:
         """Destructor to ensure cleanup of resources."""
         self.shutdown()
@@ -333,7 +352,9 @@ class Text2Speech:
         if not self._engine:
             return False
         # Handle both real classes and mocks
-        return "ElevenLabsEngine" in str(self._engine) or "ElevenLabsEngine" in str(type(self._engine))
+        engine_str = str(self._engine)
+        engine_type_str = str(type(self._engine))
+        return "ElevenLabsEngine" in engine_str or "ElevenLabsEngine" in engine_type_str
 
     def get_queue_stats(self) -> Dict[str, Any]:
         """Get queue statistics.
