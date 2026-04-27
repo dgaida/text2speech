@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>Nonede/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/"/>
+    </url>
+    <url>
+        <loc>Nonede/changelog/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/changelog/"/>
+    </url>
+    <url>
+        <loc>Nonede/configuration/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/configuration/"/>
+    </url>
+    <url>
+        <loc>Nonede/getting-started/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/getting-started/"/>
+    </url>
+    <url>
+        <loc>Nonede/installation/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/installation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/installation/"/>
+    </url>
+    <url>
+        <loc>Nonede/metrics/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/metrics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/metrics/"/>
+    </url>
+    <url>
+        <loc>Nonede/troubleshooting/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>Nonede/api/core/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/core/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/core/"/>
+    </url>
+    <url>
+        <loc>Nonede/api/engines/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/engines/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/engines/"/>
+    </url>
+    <url>
+        <loc>Nonede/api/utils/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/utils/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/utils/"/>
+    </url>
+    <url>
+        <loc>Nonede/architecture/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/architecture/"/>
+    </url>
+    <url>
+        <loc>Nonede/architecture/adr/001-audio-queue-manager/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/architecture/adr/001-audio-queue-manager/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/architecture/adr/001-audio-queue-manager/"/>
+    </url>
+    <url>
+        <loc>Nonede/development/contributing/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/development/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/development/contributing/"/>
+    </url>
+    <url>
+        <loc>Nonede/development/docstring-guide/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/development/docstring-guide/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/development/docstring-guide/"/>
+    </url>
+    <url>
+        <loc>Nonede/usage/advanced/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/usage/advanced/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/usage/advanced/"/>
+    </url>
+    <url>
+        <loc>Nonede/usage/basic/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/usage/basic/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/usage/basic/"/>
+    </url>
+    <url>
+        <loc>Noneen/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/"/>
+    </url>
+    <url>
+        <loc>Noneen/changelog/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/changelog/"/>
+    </url>
+    <url>
+        <loc>Noneen/configuration/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/configuration/"/>
+    </url>
+    <url>
+        <loc>Noneen/getting-started/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/getting-started/"/>
+    </url>
+    <url>
+        <loc>Noneen/installation/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/installation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/installation/"/>
+    </url>
+    <url>
+        <loc>Noneen/metrics/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/metrics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/metrics/"/>
+    </url>
+    <url>
+        <loc>Noneen/troubleshooting/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>Noneen/api/core/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/core/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/core/"/>
+    </url>
+    <url>
+        <loc>Noneen/api/engines/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/engines/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/engines/"/>
+    </url>
+    <url>
+        <loc>Noneen/api/utils/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/utils/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/utils/"/>
+    </url>
+    <url>
+        <loc>Noneen/architecture/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/architecture/"/>
+    </url>
+    <url>
+        <loc>Noneen/architecture/adr/001-audio-queue-manager/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/architecture/adr/001-audio-queue-manager/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/architecture/adr/001-audio-queue-manager/"/>
+    </url>
+    <url>
+        <loc>Noneen/development/contributing/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/development/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/development/contributing/"/>
+    </url>
+    <url>
+        <loc>Noneen/development/docstring-guide/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/development/docstring-guide/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/development/docstring-guide/"/>
+    </url>
+    <url>
+        <loc>Noneen/usage/advanced/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/usage/advanced/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/usage/advanced/"/>
+    </url>
+    <url>
+        <loc>Noneen/usage/basic/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/usage/basic/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/usage/basic/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/changelog/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/changelog/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/configuration/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/configuration/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/getting-started/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/getting-started/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/installation/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/installation/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/installation/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/metrics/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/metrics/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/metrics/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/troubleshooting/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/api/core/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/core/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/core/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/api/engines/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/engines/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/engines/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/api/utils/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/api/utils/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/api/utils/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/architecture/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/architecture/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/architecture/adr/001-audio-queue-manager/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/architecture/adr/001-audio-queue-manager/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/architecture/adr/001-audio-queue-manager/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/development/contributing/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/development/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/development/contributing/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/development/docstring-guide/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/development/docstring-guide/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/development/docstring-guide/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/usage/advanced/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/usage/advanced/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/usage/advanced/"/>
+    </url>
+    <url>
+        <loc>Noneen/de/usage/basic/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/de/usage/basic/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Nonede/usage/basic/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/changelog/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/changelog/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/configuration/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/configuration/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/getting-started/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/getting-started/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/installation/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/installation/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/installation/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/metrics/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/metrics/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/metrics/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/troubleshooting/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/api/core/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/core/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/core/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/api/engines/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/engines/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/engines/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/api/utils/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/api/utils/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/api/utils/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/architecture/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/architecture/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/architecture/adr/001-audio-queue-manager/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/architecture/adr/001-audio-queue-manager/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/architecture/adr/001-audio-queue-manager/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/development/contributing/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/development/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/development/contributing/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/development/docstring-guide/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/development/docstring-guide/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/development/docstring-guide/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/usage/advanced/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/usage/advanced/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/usage/advanced/"/>
+    </url>
+    <url>
+        <loc>Noneen/en/usage/basic/</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/en/usage/basic/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="Noneen/usage/basic/"/>
+    </url>
+</urlset>
