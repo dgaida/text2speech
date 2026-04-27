@@ -10,12 +10,12 @@ The **text2speech** module is designed to provide robust and easy-to-use speech 
 
 ### Key Features
 
-- ✅ **Thread-safe audio queue** - Prevents ALSA/PortAudio conflicts via serialized playback.
-- ✅ **High-quality synthesis** - Uses the Kokoro-82M model for natural-sounding voices.
-- ✅ **Priority-based control** - Urgent messages interrupt normal messages.
-- ✅ **Duplicate detection** - Avoids repetition of identical messages within short intervals.
-- ✅ **Flexible configuration system** - YAML-based settings for audio, voices, and performance.
-- ✅ **Multilingual** - Support for various accents and languages.
+- ✅ **Thread-safe audio queue** - Prevents ALSA/PortAudio conflicts via serialized playback.  
+- ✅ **High-quality synthesis** - Uses the Kokoro-82M model for natural-sounding voices.  
+- ✅ **Priority-based control** - Urgent messages interrupt normal messages.  
+- ✅ **Duplicate detection** - Avoids repetition of identical messages within short intervals.  
+- ✅ **Flexible configuration system** - YAML-based settings for audio, voices, and performance.  
+- ✅ **Multilingual** - Support for various accents and languages.  
 
 ---
 

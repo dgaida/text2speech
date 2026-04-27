@@ -10,12 +10,12 @@ Das **text2speech**-Modul wurde entwickelt, um eine robuste und einfach zu bedie
 
 ### Hauptmerkmale
 
-- ✅ **Thread-sichere Audio-Queue** - Verhindert ALSA/PortAudio-Konflikte durch serialisierte Wiedergabe.
-- ✅ **Hochwertige Synthese** - Verwendet das Kokoro-82M-Modell für natürlich klingende Stimmen.
-- ✅ **Prioritätsbasierte Steuerung** - Dringende Nachrichten unterbrechen normale Nachrichten.
-- ✅ **Duplikaterkennung** - Vermeidet die Wiederholung identischer Nachrichten in kurzen Abständen.
-- ✅ **Flexibles Konfigurationssystem** - YAML-basierte Einstellungen für Audio, Stimmen und Leistung.
-- ✅ **Mehrsprachig** - Unterstützung für verschiedene Akzente und Sprachen.
+- ✅ **Thread-sichere Audio-Queue** - Verhindert ALSA/PortAudio-Konflikte durch serialisierte Wiedergabe.  
+- ✅ **Hochwertige Synthese** - Verwendet das Kokoro-82M-Modell für natürlich klingende Stimmen.  
+- ✅ **Prioritätsbasierte Steuerung** - Dringende Nachrichten unterbrechen normale Nachrichten.  
+- ✅ **Duplikaterkennung** - Vermeidet die Wiederholung identischer Nachrichten in kurzen Abständen.  
+- ✅ **Flexibles Konfigurationssystem** - YAML-basierte Einstellungen für Audio, Stimmen und Leistung.  
+- ✅ **Mehrsprachig** - Unterstützung für verschiedene Akzente und Sprachen.  
 
 ---
 

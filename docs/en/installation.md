@@ -4,11 +4,11 @@ This guide will walk you through installing `text2speech` and its dependencies.
 
 ## System Requirements
 
-- **Python**: Version 3.9 or higher.
-- **Operating Systems**: Ubuntu (tested), Windows, macOS.
-- **Audio**: A system with a working audio output device.
-- **Memory**: Minimum 2GB RAM recommended (4GB for optimal performance).
-- **Disk Space**: Approx. 500MB for model files.
+- **Python**: Version 3.9 or higher.  
+- **Operating Systems**: Ubuntu (tested), Windows, macOS.  
+- **Audio**: A system with a working audio output device.  
+- **Memory**: Minimum 2GB RAM recommended (4GB for optimal performance).  
+- **Disk Space**: Approx. 500MB for model files.  
 
 ## Installation from Source
 

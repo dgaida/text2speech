@@ -16,7 +16,7 @@ Although initially designed to use **ElevenLabs**, this implementation now relie
 [![CodeQL](https://github.com/dgaida/text2speech/actions/workflows/codeql.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/codeql.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.2.1-blue)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dgaida.github.io/text2speech/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/dgaida/text2speech/graphs/commit-activity)
 ![Last commit](https://img.shields.io/github/last-commit/dgaida/text2speech)
@@ -25,18 +25,18 @@ Although initially designed to use **ElevenLabs**, this implementation now relie
 
 ## Features
 
-- ✅ **Thread-safe audio queue** - Prevents ALSA/PortAudio conflicts with serialized playback
-- ✅ Asynchronous text-to-speech synthesis
-- ✅ Uses **Kokoro-82M** for natural-sounding voices (Apache 2.0 licensed)
-- ✅ Priority-based message queueing
-- ✅ Automatic duplicate message detection
-- ✅ YAML-based configuration system
-- ✅ Automatic resampling and volume normalization for playback
-- ✅ Safe, thread-based audio playback
-- ✅ Support for multiple languages and voices
-- ✅ Command-line interface
-- ✅ Comprehensive test suite with >90% coverage
-- ⚙️ Legacy ElevenLabs integration retained for backward compatibility (disabled by default)
+- ✅ **Thread-safe audio queue** - Prevents ALSA/PortAudio conflicts with serialized playback  
+- ✅ Asynchronous text-to-speech synthesis  
+- ✅ Uses **Kokoro-82M** for natural-sounding voices (Apache 2.0 licensed)  
+- ✅ Priority-based message queueing  
+- ✅ Automatic duplicate message detection  
+- ✅ YAML-based configuration system  
+- ✅ Automatic resampling and volume normalization for playback  
+- ✅ Safe, thread-based audio playback  
+- ✅ Support for multiple languages and voices  
+- ✅ Command-line interface  
+- ✅ Comprehensive test suite with >90% coverage  
+- ⚙️ Legacy ElevenLabs integration retained for backward compatibility (disabled by default)  
 
 ---
 
@@ -168,17 +168,17 @@ text2speech "Hello" --config my_config.yaml
 
 ## Available Voices
 
-### American English (`lang_code: "a"`)
-- `af_heart` - Female, warm and clear (default)
-- `af_nicole` - Female, professional
-- `am_adam` - Male, deep and authoritative
-- `am_michael` - Male, friendly
+### American English (`lang_code: "a"`)  
+- `af_heart` - Female, warm and clear (default)  
+- `af_nicole` - Female, professional  
+- `am_adam` - Male, deep and authoritative  
+- `am_michael` - Male, friendly  
 
-### British English (`lang_code: "b"`)
-- `bf_emma` - Female, elegant
-- `bf_isabella` - Female, sophisticated
-- `bm_lewis` - Male, refined
-- `bm_george` - Male, distinguished
+### British English (`lang_code: "b"`)  
+- `bf_emma` - Female, elegant  
+- `bf_isabella` - Female, sophisticated  
+- `bm_lewis` - Male, refined  
+- `bm_george` - Male, distinguished  
 
 ### Voice Selection
 
@@ -206,11 +206,11 @@ The audio queue manager prevents ALSA/PortAudio device conflicts by serializing 
 
 ### Key Features
 
-- **Priority Queue**: Urgent messages play first
-- **Duplicate Detection**: Skips repeated messages within timeout window
-- **Non-blocking**: Queue messages and continue execution
-- **Statistics Tracking**: Monitor queue performance
-- **Automatic Cleanup**: Graceful shutdown handling
+- **Priority Queue**: Urgent messages play first  
+- **Duplicate Detection**: Skips repeated messages within timeout window  
+- **Non-blocking**: Queue messages and continue execution  
+- **Statistics Tracking**: Monitor queue performance  
+- **Automatic Cleanup**: Graceful shutdown handling  
 
 ### Queue Statistics
 
@@ -274,11 +274,11 @@ python examples/demo.py --interactive
 
 ### Available Examples
 
-1. **Simple Greeting** - Basic TTS demonstration
-2. **Multiple Sentences** - Sequential speech generation
-3. **Multilingual** - Speaking in different languages
-4. **Long Text** - Handling longer passages
-5. **Interactive Mode** - User input to speech
+1. **Simple Greeting** - Basic TTS demonstration  
+2. **Multiple Sentences** - Sequential speech generation  
+3. **Multilingual** - Speaking in different languages  
+4. **Long Text** - Handling longer passages  
+5. **Interactive Mode** - User input to speech  
 
 ---
 
@@ -300,12 +300,12 @@ Audio Playback
 
 ### Key Components
 
-1. **Text2Speech**: Main class coordinating TTS operations
-2. **AudioQueueManager**: Thread-safe priority queue for audio playback
-3. **Config**: YAML-based configuration management
-4. **Kokoro Pipeline**: Speech synthesis engine (82M parameters)
-5. **Audio Processing**: Resampling and normalization
-6. **Safe Playback**: Thread-safe audio output with error handling
+1. **Text2Speech**: Main class coordinating TTS operations  
+2. **AudioQueueManager**: Thread-safe priority queue for audio playback  
+3. **Config**: YAML-based configuration management  
+4. **Kokoro Pipeline**: Speech synthesis engine (82M parameters)  
+5. **Audio Processing**: Resampling and normalization  
+6. **Safe Playback**: Thread-safe audio output with error handling  
 
 ---
 
@@ -386,12 +386,12 @@ pre-commit install
 
 ### CI/CD Pipeline
 
-The project includes GitHub Actions workflows for:
-- 🔍 Code quality checks (Ruff, Black, mypy)
-- 🧪 Automated testing across multiple Python versions and OS
-- 🔒 Security scanning (CodeQL, Bandit)
-- 📦 Dependency review
-- 🚀 Automated releases
+The project includes GitHub Actions workflows for:  
+- 🔍 Code quality checks (Ruff, Black, mypy)  
+- 🧪 Automated testing across multiple Python versions and OS  
+- 🔒 Security scanning (CodeQL, Bandit)  
+- 📦 Dependency review  
+- 🚀 Automated releases  
 
 ---
 
@@ -403,12 +403,12 @@ See [troubleshooting.md](docs/troubleshooting.md).
 
 ## System Requirements
 
-- **Python**: 3.9 or higher
-- **Operating Systems**: Ubuntu, Windows, macOS
-- **Audio**: System with audio output device
-- **Memory**: Minimum 2GB RAM recommended, 4GB for optimal performance
-- **Disk Space**: ~500MB for model files
-- **GPU** (optional): CUDA-capable GPU for faster inference
+- **Python**: 3.9 or higher  
+- **Operating Systems**: Ubuntu, Windows, macOS  
+- **Audio**: System with audio output device  
+- **Memory**: Minimum 2GB RAM recommended, 4GB for optimal performance  
+- **Disk Space**: ~500MB for model files  
+- **GPU** (optional): CUDA-capable GPU for faster inference  
 
 ---
 
@@ -420,10 +420,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **Kokoro-82M**: For providing the excellent open-source TTS model (Apache 2.0)
-- **PyTorch**: For the deep learning framework
-- **sounddevice**: For audio playback capabilities
-- **ElevenLabs**: For initial inspiration (legacy support)
+- **Kokoro-82M**: For providing the excellent open-source TTS model (Apache 2.0)  
+- **PyTorch**: For the deep learning framework  
+- **sounddevice**: For audio playback capabilities  
+- **ElevenLabs**: For initial inspiration (legacy support)  
 
 ---
 
@@ -437,14 +437,14 @@ GitHub: [@dgaida](https://github.com/dgaida)
 
 ## Roadmap
 
-- [x] Audio queue manager for conflict-free playback
-- [x] YAML configuration system
-- [x] Command-line interface
-- [ ] Add support for custom voice models
-- [ ] Implement audio caching for repeated phrases
-- [ ] Support for SSML (Speech Synthesis Markup Language)
-- [ ] Real-time streaming TTS
-- [ ] Voice cloning capabilities
-- [ ] Web API endpoint for remote TTS
-- [ ] Docker containerization
-- [ ] Plugin system for custom audio processors
+- [x] Audio queue manager for conflict-free playback  
+- [x] YAML configuration system  
+- [x] Command-line interface  
+- [ ] Add support for custom voice models  
+- [ ] Implement audio caching for repeated phrases  
+- [ ] Support for SSML (Speech Synthesis Markup Language)  
+- [ ] Real-time streaming TTS  
+- [ ] Voice cloning capabilities  
+- [ ] Web API endpoint for remote TTS  
+- [ ] Docker containerization  
+- [ ] Plugin system for custom audio processors  
