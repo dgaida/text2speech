@@ -4,11 +4,12 @@ Dieser Leitfaden führt Sie durch die Installation von `text2speech` und seinen 
 
 ## Systemanforderungen
 
-- **Python**: Version 3.9 oder höher.  
-- **Betriebssysteme**: Ubuntu (getestet), Windows, macOS.  
-- **Audio**: Ein System mit funktionierendem Audio-Ausgabegerät.  
-- **Speicher**: Mindestens 2GB RAM empfohlen (4GB für optimale Leistung).  
-- **Festplatte**: Ca. 500MB für Modelldateien.  
+- **Python**: Version 3.9 oder höher.
+- **Betriebssysteme**: Ubuntu (getestet), Windows, macOS.
+- **Audio**: Ein System mit funktionierendem Audio-Ausgabegerät.
+- **Speicher**: Mindestens 2GB RAM empfohlen (4GB für optimale Leistung).
+- **Festplatte**: Ca. 500MB für Modelldateien.
+- **GPU** (optional): CUDA-fähige GPU für schnellere Inferenz.
 
 ## Installation aus den Quellen
 
@@ -28,9 +29,9 @@ Für Entwickler und spezielle Anwendungsfälle:
 
 ### Entwicklungs-Tools
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,docs]"
 ```
-Dies installiert Tools wie `pytest`, `ruff`, `black` und `mypy`.
+Dies installiert Tools wie `pytest`, `ruff`, `black`, `mypy` sowie die Dokumentations-Tools.
 
 ### ElevenLabs (Legacy-Unterstützung)
 Wenn Sie das alte ElevenLabs-Backend nutzen möchten:

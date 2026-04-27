@@ -17,6 +17,22 @@ theme:
     - content.code.copy
     - content.code.annotate
     - content.tooltips
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
 extra:
   version:
@@ -50,23 +66,26 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
+  - Erste Schritte / Getting Started: getting-started.md
   - Installation: installation.md
-  - Configuration: configuration.md
-  - Usage:
-      - Basic Usage: usage/basic.md
-      - Advanced Usage: usage/advanced.md
-  - API Reference:
+  - Konfiguration / Configuration: configuration.md
+  - Nutzung / Usage:
+      - Grundlagen / Basic: usage/basic.md
+      - Fortgeschritten / Advanced: usage/advanced.md
+  - API Referenz:
       - Core API: api/core.md
       - Engines: api/engines.md
       - Utilities: api/utils.md
-  - Architecture: architecture/index.md
-  - Development:
-      - Contributing: development/contributing.md
-      - Style Guide: development/style-guide.md
-  - Troubleshooting: troubleshooting.md
+  - Architektur / Architecture:
+      - Übersicht / Overview: architecture/index.md
+      - ADRs:
+          - ADR-001: architecture/adr/001-audio-queue-manager.md
+  - Entwicklung / Development:
+      - Mitwirken / Contributing: development/contributing.md
+      - Docstring Guide: development/docstring-guide.md
+  - Fehlerbehebung / Troubleshooting: troubleshooting.md
   - Changelog: changelog.md
-  - Metrics: metrics.md
+  - Metriken / Metrics: metrics.md
 
 markdown_extensions:
   - admonition

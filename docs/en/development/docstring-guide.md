@@ -22,6 +22,11 @@ def function(name: str, age: int = 0) -> bool:
 
     Raises:
         ValueError: If the name is empty.
+        TypeError: If the type of name is invalid.
+
+    Example:
+        >>> function("Alice", 30)
+        True
     """
     if not name:
         raise ValueError("Name cannot be empty")
@@ -50,9 +55,13 @@ class Example:
 
 ## Automation
 
-We use `interrogate` to measure docstring coverage. Every public API must be documented.
+We use `interrogate` to measure docstring coverage. Every public API must be documented. The CI pipeline will fail if coverage drops below 95%.
 
 ```bash
 # Check docstring coverage
 interrogate text2speech/
 ```
+
+## Current Status
+
+The current status of docstring coverage can be viewed on the [Metrics page](../metrics.md).

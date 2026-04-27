@@ -22,6 +22,11 @@ def funktion(name: str, alter: int = 0) -> bool:
 
     Raises:
         ValueError: Wenn der Name leer ist.
+        TypeError: Wenn der Typ von name ungültig ist.
+
+    Example:
+        >>> funktion("Alice", 30)
+        True
     """
     if not name:
         raise ValueError("Name darf nicht leer sein")
@@ -50,9 +55,13 @@ class Beispiel:
 
 ## Automatisierung
 
-Wir verwenden `interrogate`, um die Abdeckung der Docstrings zu messen. Jede öffentliche API muss dokumentiert sein.
+Wir verwenden `interrogate`, um die Abdeckung der Docstrings zu messen. Jede öffentliche API muss dokumentiert sein. Die CI-Pipeline bricht ab, wenn die Abdeckung unter 95% fällt.
 
 ```bash
 # Prüfung der Docstring-Abdeckung
 interrogate text2speech/
 ```
+
+## Aktueller Status
+
+Der aktuelle Status der Docstring-Abdeckung kann auf der [Metriken-Seite](../metrics.md) eingesehen werden.

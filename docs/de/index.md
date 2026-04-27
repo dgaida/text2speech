@@ -31,6 +31,13 @@ Das **text2speech**-Modul wurde entwickelt, um eine robuste und einfach zu bedie
 
 ---
 
+## Metriken & Status
+
+[![Interrogate](assets/interrogate.svg)](metrics.md)
+[![Tests](https://github.com/dgaida/text2speech/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/tests.yml)
+
+---
+
 ## Lizenz
 
 Dieses Projekt ist unter der MIT-Lizenz lizenziert. Weitere Details finden Sie in der [LICENSE](https://github.com/dgaida/text2speech/blob/master/LICENSE)-Datei.

@@ -1,57 +1,37 @@
 # Documentation Metrics
 
-Dieses Dashboard zeigt die aktuelle Qualität und Abdeckung der Dokumentation sowie der Tests.
+This page visualizes the quality and status of the project documentation.
 
-## 📊 Summary
+## Overview
 
-| Metric | Status | Wert | Ziel |
-|--------|--------|------|------|
-| API-Abdeckung | ✅ | 100% | >95% |
-| Test Coverage | ✅ | 98% | >90% |
-| Build-Status | ✅ | Passing | - |
-| Gebrochene Links | ✅ | 0 | 0 |
+| Metric | Status / Value | Source |
+|---|---|---|
+| API Doc Coverage | [![Interrogate](../assets/interrogate.svg)](../assets/interrogate.svg) | `interrogate` |
+| Build Status | [![Docs](https://github.com/dgaida/text2speech/actions/workflows/docs.yml/badge.svg)](https://github.com/dgaida/text2speech/actions/workflows/docs.yml) | GitHub Actions |
+| Last Update | <span id="last-update">Loading...</span> | CI Pipeline |
+| Broken Links | <span id="broken-links">Loading...</span> | `lychee` |
 
----
+## Detailed Statistics
 
-## 📈 API Documentation Coverage
+<div id="metrics-dashboard">
+  <p>Loading metrics from the last CI run...</p>
+</div>
 
-Die API-Abdeckung wird automatisch mit `interrogate` gemessen. Sie stellt sicher, dass alle öffentlichen Klassen, Methoden und Funktionen korrekt dokumentiert sind.
+<script>
+fetch('../assets/metrics.json')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('last-update').textContent = data.timestamp;
+    document.getElementById('broken-links').textContent = data.broken_links || 'None';
 
-```mermaid
-pie title API-Abdeckung (interrogate)
-    "Documented" : 100
-    "Undocumented" : 0
-```
-
----
-
-## 🧪 Test Coverage
-
-Die Test Coverage gibt an, wie viel Prozent des Quellcodes durch automatisierte Tests (Pytest) ausgeführt werden.
-
-```mermaid
-pie title Test Coverage (pytest-cov)
-    "Covered" : 98
-    "Not covered" : 2
-```
-
----
-
-## 🛠️ Documentation Quality
-
-| Check | Tool | Status |
-|-------|------|--------|
-| Google-Style Docstrings | mkdocstrings | ✅ Passing |
-| Markdown Linting | pymarkdown | ✅ Passing |
-| Mermaid Diagramme | mermaid2 | ✅ Passing |
-| Cross-Links | mkdocs | ✅ Passing |
-
----
-
-## 🕒 Changelog Freshness
-
-Der Changelog wird automatisch bei jedem Release über `git-cliff` aktualisiert, basierend auf den [Conventional Commits](https://www.conventionalcommits.org/).
-
----
-
-*Last updated: Februar 2026*
+    let html = '<ul>';
+    for (const [key, value] of Object.entries(data)) {
+      html += `<li><strong>${key}:</strong> ${value}</li>`;
+    }
+    html += '</ul>';
+    document.getElementById('metrics-dashboard').innerHTML = html;
+  })
+  .catch(error => {
+    document.getElementById('metrics-dashboard').innerHTML = '<p>Metrics currently unavailable. They will be generated during the next CI run.</p>';
+  });
+</script>
